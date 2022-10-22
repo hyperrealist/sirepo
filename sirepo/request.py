@@ -39,9 +39,6 @@ class _Request(sirepo.quest.Attr):
     def body_as_bytes(self):
         return self.internal_req.get_data(cache=False)
 
-    def content_type_encoding(self):
-        return self.__content_type().get("charset")
-
     def content_type_eq(self, value):
         return self.__content_type()._key.lower() == value.lower()
 
