@@ -4,11 +4,10 @@
 :copyright: Copyright (c) 2015-2019 RadiaSoft LLC.  All Rights Reserved.
 :license: http://www.apache.org/licenses/LICENSE-2.0.html
 """
-from __future__ import absolute_import, division, print_function
 from openpmd_viewer import OpenPMDTimeSeries
 from openpmd_viewer.openpmd_timeseries import main
 from openpmd_viewer.openpmd_timeseries.data_reader import field_reader
-from pykern import pkcollections
+from openpmd_viewer.openpmd_timeseries.data_reader import h5py_reader
 from pykern import pkio
 from pykern.pkcollections import PKDict
 from pykern.pkdebug import pkdc, pkdp
@@ -18,7 +17,6 @@ import h5py
 import numpy
 import os
 import os.path
-import py.path
 import re
 import sirepo.sim_data
 
@@ -199,7 +197,7 @@ def open_data_file(run_dir, file_index=None):
     """Opens data file_index'th in run_dir
 
     Args:
-        run_dir (py.path): has subdir ``hdf5``
+        run_dir (pkio.py_path): has subdir ``hdf5``
         file_index (int): which file to open (default: last one)
         files (list): list of files (default: load list)
 
@@ -251,7 +249,7 @@ def write_parameters(data, run_dir, is_parallel):
 
     Args:
         data (dict): input
-        run_dir (py.path): where to write
+        run_dir (pkio.py_path): where to write
         is_parallel (bool): run in background?
     """
     pkio.write_text(
@@ -290,14 +288,14 @@ def _iteration_title(opmd, data_file):
 
 
 def _opmd_time_series(data_file):
-    prev = None
+    p = h5py_reader.list_files
     try:
-        prev = main.list_h5_files
-        main.list_h5_files = lambda x: ([data_file.filename], [data_file.iteration])
-        return OpenPMDTimeSeries(py.path.local(data_file.filename).dirname)
+        h5py_reader.list_files = lambda x: ([data_file.filename], [data_file.iteration])
+        return OpenPMDTimeSeries(
+            pkio.py_path(data_file.filename).dirname, backend="h5py"
+        )
     finally:
-        if prev:
-            main.list_h5_files = prev
+        h5py_reader.list_files = p
 
 
 def _particle_selection_args(args):
