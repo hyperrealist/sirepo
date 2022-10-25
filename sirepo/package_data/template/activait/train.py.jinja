@@ -17,7 +17,6 @@ history = model.fit(
     validation_data=(valx, valy),
     batch_size={{ neuralNet_batch_size }},
     callbacks=[CSVLogger('{{ fitCSVFile }}')],
-    shuffle=True,
 )
 
 {% else %}
