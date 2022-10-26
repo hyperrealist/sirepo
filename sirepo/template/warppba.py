@@ -8,6 +8,7 @@ from openpmd_viewer import OpenPMDTimeSeries
 from openpmd_viewer.openpmd_timeseries import main
 from openpmd_viewer.openpmd_timeseries.data_reader import field_reader
 from openpmd_viewer.openpmd_timeseries.data_reader import h5py_reader
+from openpmd_viewer.openpmd_timeseries.data_reader import data_reader
 from pykern import pkio
 from pykern.pkcollections import PKDict
 from pykern.pkdebug import pkdc, pkdp
@@ -100,12 +101,13 @@ def extract_particle_report(frame_args, particle_type):
         output=True,
         plot=False,
     )
-    with h5py.File(data_file.filename) as f:
-        data_list.append(main.read_species_data(f, particle_type, "w", ()))
+    # with h5py.File(data_file.filename) as f:
+    data_list.append(h5py_reader.particle_reader.read_species_data(data_file.filename, data_file.iteration, particle_type, "w", ()))
     select = _particle_selection_args(frame_args)
     if select:
-        with h5py.File(data_file.filename) as f:
-            main.apply_selection(f, data_list, select, particle_type, ())
+        # with h5py.File(data_file.filename) as f:
+        main.apply_selection(data_file.filename, data_reader.DataReader("h5py"), data_list, select, particle_type, ())
+        # main.apply_selection(f, data_list, select, particle_type, ())
     xunits = " [m]" if len(xarg) == 1 else ""
     yunits = " [m]" if len(yarg) == 1 else ""
 
