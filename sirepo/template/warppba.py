@@ -290,7 +290,9 @@ def _iteration_title(opmd, data_file):
 def _opmd_time_series(data_file):
     p = h5py_reader.list_files
     try:
-        h5py_reader.list_files = lambda x: ([data_file.filename], [data_file.iteration])
+        d = PKDict()
+        d[data_file.iteration] = data_file.filename
+        h5py_reader.list_files = lambda x: ([data_file.iteration], d)
         return OpenPMDTimeSeries(
             pkio.py_path(data_file.filename).dirname, backend="h5py"
         )
