@@ -4,8 +4,8 @@
 :copyright: Copyright (c) 2017 RadiaSoft LLC.  All Rights Reserved.
 :license: http://www.apache.org/licenses/LICENSE-2.0.html
 """
-from pykern import pkinspect
 from pykern import pkconfig
+from pykern import pkinspect
 from pykern.pkcollections import PKDict
 from pykern.pkdebug import pkdc, pkdexc, pkdlog, pkdp
 import contextlib
@@ -109,11 +109,12 @@ def init_for_flask(app):
     app.add_url_rule("/", "_dispatch_empty", _dispatch_empty, methods=("GET", "POST"))
 
 
-def init_module(**imports):
+def init_module(want_apis, **imports):
     """Convert route map to dispatchable callables
 
     Initializes `_uri_to_route`
     """
+    global _uri_to_route
 
     def _api_modules():
         m = (
@@ -124,10 +125,13 @@ def init_module(**imports):
             return m + ("auth_role_moderation",)
         return m
 
-    if _uri_to_route:
+    if _uri_to_route is not None:
         return
     # import simulation_db
     sirepo.util.setattr_imports(imports)
+    if not want_apis:
+        _uri_to_route = PKDict()
+        return
     for n in _api_modules():
         register_api_module("sirepo." + n)
     _register_sim_api_modules()
@@ -170,7 +174,8 @@ def register_api_module(module):
     if not hasattr(m, "API"):
         if pkinspect.module_functions("api_", module=m):
             raise AssertionError(f"module={m.__name__} has old interface")
-        pkdlog("module={} does not have API class; no apis", m)
+        if pkconfig.channel_in("dev"):
+            pkdlog(f"api_module={m.__name__} does not have API class (no apis)")
         # some modules (ex: sirepo.auth.basic) don't have any APIs
         return
     c = m.API
@@ -388,17 +393,14 @@ def _register_sim_api_modules():
 
 
 def _register_sim_modules_from_package(package, valid_sim_types=None):
-    for _, n, ispkg in pkgutil.iter_modules(
-        [os.path.dirname(importlib.import_module(f"sirepo.{package}").__file__)],
-    ):
-        if ispkg:
-            continue
+    p = pkinspect.module_name_join(("sirepo", package))
+    for n in pkinspect.package_module_names(p):
         if not sirepo.template.is_sim_type(n) or (
             valid_sim_types is not None and n not in valid_sim_types
         ):
             pkdc(f"not adding apis for unknown sim_type={n}")
             continue
-        register_api_module(f"sirepo.{package}.{n}")
+        register_api_module(pkinspect.module_name_join((p, n)))
 
 
 def _register_sim_oauth_modules(oauth_sim_types):

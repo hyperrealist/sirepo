@@ -17,7 +17,7 @@ import os
 import re
 import shutil
 import signal
-import sirepo.auth
+import sirepo.modules
 import sirepo.tornado
 import socket
 import subprocess
@@ -203,8 +203,7 @@ class _Dispatcher(PKDict):
                             s,
                         )
                         raise tornado.iostream.StreamClosedError()
-                    with sirepo.quest.start():
-                        s = await self._op(r)
+                    s = await self._op(r)
             except Exception as e:
                 pkdlog("error={} stack={}", e, pkdexc())
                 # TODO(e-carlin): exponential backoff?
@@ -436,6 +435,7 @@ class _Cmd(PKDict):
         self._terminating = False
         self._start_time = int(time.time())
         self.jid = self.msg.computeJid
+        self._uid = job.split_jid(jid=self.jid).uid
 
     def destroy(self):
         self._terminating = True
@@ -455,6 +455,7 @@ class _Cmd(PKDict):
             cmd=self.job_cmd_cmd(),
             env=self.job_cmd_env(),
             source_bashrc=self.job_cmd_source_bashrc(),
+            uid=self._uid,
         )
 
     def job_cmd_env(self, env=None):
@@ -466,6 +467,7 @@ class _Cmd(PKDict):
                 SIREPO_SIM_DATA_SUPERVISOR_SIM_DB_FILE_URI=cfg.supervisor_sim_db_file_uri,
                 SIREPO_SIM_DATA_SUPERVISOR_SIM_DB_FILE_TOKEN=cfg.supervisor_sim_db_file_token,
             ),
+            uid=self._uid,
         )
 
     def job_cmd_source_bashrc(self):
