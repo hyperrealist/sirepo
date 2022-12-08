@@ -321,8 +321,8 @@ SIREPO.app.directive('scansTable', function() {
                   </tbody>
                 </table>
                 <div style="height: 20px;">
-                  <div ng-if="awaitingScans" data-dots-animation="" data-text="Checking for new scans"></div>
                   <div ng-if="noScansReturned">No scans found</div>
+                  <div ng-if="lastUpdatedTime" style="color:gray">Automatically updated at {{ lastUpdatedTime }}</div>
                 </div>
               </div>
             </div>
@@ -368,6 +368,7 @@ SIREPO.app.directive('scansTable', function() {
             // POSIT: status + sirepo.template.raydata._DEFAULT_COLUMNS
             $scope.defaultColumns = ['status', 'start', 'stop', 'suid'];
             $scope.images = null;
+            $scope.lastUpdatedTime = null;
             $scope.noScansReturned = false;
             $scope.orderByColumn = 'start';
             $scope.reverseSortScans = false;
@@ -427,6 +428,7 @@ SIREPO.app.directive('scansTable', function() {
                     requestSender.sendStatelessCompute(
                         appState,
                         (json) => {
+                            $scope.lastUpdatedTime = new Date(Date.now()).toUTCString();
                             $scope.awaitingScans = false;
                             $scope.scans = json.data.scans.slice();
                             if ($scope.scans.length === 0) {
