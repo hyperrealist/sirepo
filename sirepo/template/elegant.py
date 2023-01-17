@@ -864,6 +864,8 @@ def validate_file(file_type, path):
 
 
 def webcon_generate_lattice(data, qcall):
+    if not data.models.get("rpnVariables"):
+        data.models.rpnVariables = []
     return _Generate(data, validate=False, qcall=qcall).lattice_only()
 
 

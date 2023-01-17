@@ -491,6 +491,7 @@ def read_epics_values(server_address, fields):
     output = run_epics_command(server_address, ["caget", "-w", "5"] + fields)
     if not output:
         return None
+    pkdp("\n\n\n\nREAD:\naddress={}\nfields={}\noutput={}\n\n\n", output, server_address, fields)
     res = numpy.array(re.split(r"\s+", str(output))[1::2]).astype("float").tolist()
     # pkdlog(' got result: {}', res)
     return res
@@ -542,6 +543,7 @@ def write_parameters(data, run_dir, is_parallel):
 
 
 def write_epics_values(server_address, fields, values):
+    pkdp("\n\n\nWRITE:\nserver_address={}\nfields={}\nvalues={}\n\n", server_address, fields, values)
     for idx in range(len(fields)):
         if (
             run_epics_command(
