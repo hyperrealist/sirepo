@@ -142,6 +142,7 @@ def background_percent_complete(report, run_dir, is_running):
 
 def epics_env(server_address):
     env = os.environ.copy()
+    pkdp("\n\n\nenv={}", env)
     env["EPICS_CA_AUTO_ADDR_LIST"] = "NO"
     env["EPICS_CA_ADDR_LIST"] = server_address
     env["EPICS_CA_SERVER_PORT"] = server_address.split(":")[1]
