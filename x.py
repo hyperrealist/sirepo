@@ -40,9 +40,9 @@ def epics_env(server_address):
 
 
 def run_sim(fields, address):
-    v = [x + 1 for x in read_epics_values(a, f)]
-    write_epics_values(a, f, v)
-    print("sim result=", read_epics_values(a, f))
+    v = [x + 1 for x in read_epics_values(address, fields)]
+    write_epics_values(address, fields, v)
+    print("sim result=", read_epics_values(address, fields))
 
 
 f = ['sr_epics:corrector1:HCurrent', 'sr_epics:corrector1:VCurrent', 'sr_epics:corrector2:HCurrent', 'sr_epics:corrector2:VCurrent', 'sr_epics:corrector3:HCurrent', 'sr_epics:corrector3:VCurrent', 'sr_epics:corrector4:HCurrent', 'sr_epics:corrector4:VCurrent']
