@@ -5,11 +5,15 @@ var srdbg = SIREPO.srdbg;
 
 SIREPO.app.config(function() {
     SIREPO.PLOTTING_SUMMED_LINEOUTS = true;
-    SIREPO.appFieldEditors += [
-        '<div data-ng-switch-when="ReflectivityMaterial" data-ng-class="fieldClass">',
-          '<input data-reflectivity-material="" data-ng-model="model[field]" class="form-control" required />',
-        '</div>',
-    ].join('');
+    SIREPO.appFieldEditors +=
+        `
+            <div data-ng-switch-when="ReflectivityMaterial" data-ng-class="fieldClass">
+              <input data-reflectivity-material="" data-ng-model="model[field]" class="form-control" required />
+            </div>
+            <div data-ng-switch-when="RSOptElements" class="col-sm-12">
+              <div data-rs-opt-elements="" data-model="model" data-field="field" data-model-name="modelName" data-form="form" data-field-class="fieldClass"></div>
+            </div>
+        `
     SIREPO.appDownloadLinks = [
         '<li data-lineout-csv-link="x"></li>',
         '<li data-lineout-csv-link="y"></li>',
@@ -121,6 +125,72 @@ SIREPO.app.factory('shadowService', function(appState, beamlineService, panelSta
         panelState.showRow('rayFilter', 'x1', hasFilter);
     };
 
+    self.rsOptElementOffsetField = function(p) {
+        return `${p}Offsets`;
+    };
+
+    self.updateRSOptElements = function() {
+        const optElModel = 'rsOptElement';
+        const optEls = SIREPO.APP_SCHEMA.constants.rsOptElements;
+        const items = (appState.models.beamline || []).filter(i => optEls[i.type]);
+        const els = appState.models.exportRsOpt.elements;
+        for (const item of items) {
+            let e = self.findRSOptElement(item.id);
+            if (e) {
+                // element name may have changed
+                e.title = item.title;
+                continue;
+            }
+            e = appState.setModelDefaults({}, optElModel);
+            els.push(e);
+
+            e.title = item.title;
+            e.type = item.type;
+            e.id = item.id;
+            const props = optEls[item.type];
+            for (const p in props) {
+                appState.setFieldDefaults(
+                    e,
+                    self.rsOptElementOffsetField(p),
+                    props[p].offsetInfo || SIREPO.APP_SCHEMA.constants.rsOptDefaultOffsetInfo[p],
+                    true
+                );
+                e[p] = {
+                    fieldNames: props[p].fieldNames,
+                    initial: [],
+                    offsets: [],
+                };
+                for (const f of props[p].fieldNames || []) {
+                    e[p].initial.push(item[f] ? parseFloat(item[f]) : 0.0);
+                }
+            }
+        }
+        // remove outdated elements
+        for (let i = els.length - 1; i >= 0; --i) {
+            if (! beamlineService.getItemById(els[i].id)) {
+                els.splice(i, 1);
+            }
+        }
+        // put in beamline order
+        let ids = items.map(function (i) {
+            return i.id;
+        });
+        els.sort(function (e1, e2) {
+            return ids.indexOf(e1.id) - ids.indexOf(e2.id);
+        });
+        appState.saveQuietly('exportRsOpt');
+        return els;
+    };
+
+    self.findRSOptElement = function(id) {
+        for (let e of appState.models.exportRsOpt.elements) {
+            if (e.id === id) {
+                return e;
+            }
+        }
+        return null;
+    };
+
     appState.setAppService(self);
 
     return self;
@@ -139,6 +209,70 @@ SIREPO.app.controller('BeamlineController', function (appState, beamlineService)
             appState.models.simulation.sourceType) >= 0
             && appState.applicationState().beamline.length;
     };
+});
+
+SIREPO.app.controller('MLController', function (appState, panelState, persistentSimulation, requestSender, shadowService, $scope, $window) {
+    const self = this;
+    self.appState = appState;
+    self.shadowService = shadowService;
+    self.simScope = $scope;
+    self.resultsFile = null;
+    self.simComputeModel = 'machineLearningAnimation';
+    self.simState = persistentSimulation.initSimulationState(self);
+
+    self.createActivaitSimulation = () => {
+        requestSender.sendRequest(
+            'newSimulation',
+            data => {
+                requestSender.openSimulation(
+                    'activait',
+                    'data',
+                    data.models.simulation.simulationId
+                );
+            },
+            {
+                folder: '/',
+                name: appState.models.simulation.name,
+                simulationType: 'activait',
+                notes: 'rsopt results from SRW',
+                sourceSimFile: self.resultsFile,
+                sourceSimId: appState.models.simulation.simulationId,
+                sourceSimType: 'srw',
+            },
+            err => {
+                throw new Error('Error creating simulation' + err);
+            }
+        );
+    };
+
+    self.resultsFileURL = () => {
+        return requestSender.formatUrl('downloadDataFile', {
+            '<simulation_id>': appState.models.simulation.simulationId,
+            '<simulation_type>': SIREPO.APP_SCHEMA.simulationType,
+            '<model>': self.simComputeModel,
+            '<frame>': SIREPO.nonDataFileFrame,
+            '<suffix>': 'h5',
+        });
+    };
+
+    self.simHandleStatus = data => {
+        if (data.error) {
+        }
+        if ('percentComplete' in data && ! data.error) {
+            if (self.simState.isStateCompleted()) {
+                if (data.outputInfo && data.outputInfo.length) {
+                    self.resultsFile = data.outputInfo[0].filename;
+                }
+            }
+        }
+    };
+
+    self.startSimulation = model => {
+        self.resultsFile = null;
+        self.simState.saveAndRunSimulation([model, 'simulation']);
+    };
+
+
 });
 
 SIREPO.app.controller('SourceController', function(appState, shadowService) {
@@ -415,6 +549,56 @@ SIREPO.viewLogic('geometricSourceView', function(appState, panelState, shadowSer
     ];
 });
 
+SIREPO.viewLogic('exportRsOptView', function(appState, panelState, persistentSimulation, requestSender, $compile, $scope, $rootScope) {
+
+    const self = this;
+    self.simScope = $scope;
+    self.simComputeModel = 'exportRsOpt';
+
+    function addExportUI() {
+        $('#sr-exportRsOpt-basicEditor .model-panel-heading-buttons').append(
+            $compile(
+                `
+                    <a href data-ng-click="export()" class="dropdown-toggle" data-toggle="dropdown" title="Export ML Script">
+                        <span class="sr-panel-heading glyphicon glyphicon-cloud-download" style="margin-bottom: 0"></span>
+                   </a>
+                `
+            )($scope)
+        );
+    }
+
+    self.simHandleStatus = data => {
+        if (self.simState.isStopped()) {
+            $('#sr-download-status').modal('hide');
+        }
+        if (self.simState.isStateCompleted()) {
+            requestSender.newWindow('downloadDataFile', {
+                '<simulation_id>': appState.models.simulation.simulationId,
+                '<simulation_type>': SIREPO.APP_SCHEMA.simulationType,
+                '<model>': 'exportRsOpt',
+                '<frame>': SIREPO.nonDataFileFrame,
+                '<suffix>': 'zip'
+            });
+        }
+    };
+
+    self.startSimulation = function(model) {
+        $('#sr-download-status').modal('show');
+        $rootScope.$broadcast('download.started', self.simState, 'Export Script', 'Exporting exportRsOpt.zip');
+        self.simState.saveAndRunSimulation([model]);
+    };
+
+    self.simState = persistentSimulation.initSimulationState(self);
+
+    $scope.export = () => {
+        self.startSimulation($scope.modelName);
+    };
+
+    appState.whenModelsLoaded($scope, () => {
+        addExportUI();
+    });
+
+});
 
 SIREPO.app.directive('appFooter', function() {
     return {
@@ -431,7 +615,7 @@ SIREPO.app.directive('appFooter', function() {
 });
 
 
-SIREPO.app.directive('appHeader', function() {
+SIREPO.app.directive('appHeader', function(appState) {
     return {
         restrict: 'A',
         scope: {
@@ -443,8 +627,9 @@ SIREPO.app.directive('appHeader', function() {
             <div data-app-header-right="nav">
               <app-header-right-sim-loaded>
                 <div data-sim-sections="">
-                  <li class="sim-section" data-ng-class="{active: nav.isActive(\'source\')}"><a href data-ng-click="nav.openSection(\'source\')"><span class="glyphicon glyphicon-flash"></span> Source</a></li>
-                  <li class="sim-section" data-ng-class="{active: nav.isActive(\'beamline\')}"><a href data-ng-click="nav.openSection(\'beamline\')"><span class="glyphicon glyphicon-option-horizontal"></span> Beamline</a></li>
+                  <li class="sim-section" data-ng-class="{active: nav.isActive('source')}"><a href data-ng-click="nav.openSection('source')"><span class="glyphicon glyphicon-flash"></span> Source</a></li>
+                  <li class="sim-section" data-ng-class="{active: nav.isActive('beamline')}"><a href data-ng-click="nav.openSection('beamline')"><span class="glyphicon glyphicon-option-horizontal"></span> Beamline</a></li>
+                  <li data-ng-if="showRsOptML()" class="sim-section" data-ng-class="{active: nav.isActive('ml')}"><a href data-ng-click="nav.openSection('ml')"><span class="glyphicon glyphicon-equalizer"></span> Machine Learning</a></li>
                 </div>
               </app-header-right-sim-loaded>
               <app-settings>
@@ -461,7 +646,176 @@ SIREPO.app.directive('appHeader', function() {
             $scope.openSRWConfirm = function() {
                 $('#sr-conv-dialog').modal('show');
             };
+
+            $scope.openExportRsOpt = function() {
+                panelState.showModalEditor('exportRsOpt');
+            };
+
+            $scope.showRsOptML = function() {
+                return SIREPO.APP_SCHEMA.feature_config.show_rsopt_ml &&
+                    appState.models.beamline && appState.models.beamline.length > 0;
+            };
         }
+    };
+});
+
+
+SIREPO.app.directive('rsOptElements', function(appState, frameCache, panelState, shadowService, utilities, validationService) {
+    return {
+        restrict: 'A',
+        scope: {
+            field: '=',
+            form: '=',
+            model: '=',
+        },
+        template: `
+            <div class="sr-object-table" style="border-width: 2px; border-color: black;">
+              <div style="border-style: solid; border-width: 1px; border-color: #00a2c5;">
+              <table class="table table-hover table-condensed" style="">
+                <thead>
+                    <tr>
+                        <td style="font-weight: bold">Element</td>
+                        <td style="font-weight: bold">Parameter Variations</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr data-ng-repeat="e in rsOptElements track by $index">
+                      <td><div class="checkbox checkbox-inline"><label><input type="checkbox" data-ng-model="e.enabled" data-ng-change="updateTotalSamples()"> {{ e.title }}</label></div></td>
+                      <td data-ng-repeat="p in rsOptParams" data-ng-if="hasFields(e, p)">
+                        <div data-ng-show="showFields(e)" style="font-weight: bold; text-align: center; line-height: 2">{{ rsOptElementFields[$index] }}</div>
+                        <div data-ng-show="showFields(e)" data-model-field="shadowService.rsOptElementOffsetField(p)" data-model-name="modelName" data-model-data="elementModelData(e)" data-label-size="0" data-custom-info="elementInfo(e, p)"></div>
+                      </td>
+                    </tr>
+                </tbody>
+              </table>
+              </div>
+            </div>
+        `,
+        controller: function($scope) {
+            const els = SIREPO.APP_SCHEMA.constants.rsOptElements;
+            let exportFields = ['exportRsOpt.elements', 'exportRsOpt.numSamples', 'exportRsOpt.scanType'];
+            let elementFields = [];
+
+            $scope.appState = appState;
+            $scope.elementData = {};
+            $scope.shadowService = shadowService;
+            $scope.modelName = 'rsOptElement';
+            $scope.rsOptElements = [];
+            $scope.rsOptParams = [];
+            $scope.rsOptElementFields = [];
+
+            $scope.hasFields = function(e, p) {
+                return els[e.type][p];
+            };
+
+            $scope.elementInfo = function(e, p) {
+                return els[e.type][p].offsetInfo;
+            };
+
+            $scope.elementModelData = function(e) {
+                return $scope.elementData[e.id];
+            };
+
+            $scope.showFields = function(e) {
+                return e.enabled !== '0' && e.enabled;
+            };
+
+            $scope.updateTotalSamples = function() {
+                let numParams = 0;
+                for (let e of $scope.rsOptElements.filter((e) => {
+                    return $scope.showFields(e);
+                })) {
+                    for (let p of $scope.rsOptParams) {
+                        if (! e[p]) {
+                            continue;
+                        }
+                        numParams += e[shadowService.rsOptElementOffsetField(p)]
+                            .split(',')
+                            .reduce((c, x) => c + (parseFloat(x) ? 1 : 0), 0);
+                    }
+                }
+                $scope.model.totalSamples = numParams === 0 ? 0 :
+                    ($scope.model.scanType === 'random' ? $scope.model.numSamples :
+                    Math.pow($scope.model.numSamples, numParams));
+                updateFormValid(numParams);
+            };
+
+            function updateElements() {
+                $scope.rsOptElements = shadowService.updateRSOptElements();
+                $scope.elementData = {};
+                for (let e of $scope.rsOptElements) {
+                    const el = e;
+                    $scope.elementData[el.id] = {
+                        getData: function() {
+                            return el;
+                        }
+                    };
+                }
+                updateParams();
+            }
+
+            function updateFormValid(numParams) {
+                validationService.validateField(
+                    'exportRsOpt',
+                    'totalSamples',
+                    'input',
+                    numParams > 0,
+                    'select at least one element and vary at least one parameter'
+                );
+            }
+
+            function updateParams() {
+                let s = new Set();
+                for (let e in els) {
+                    for (let k of Object.keys(els[e])) {
+                        s.add(k);
+                    }
+                }
+                $scope.rsOptParams = [...s];
+                $scope.rsOptElementFields = [];
+                SIREPO.APP_SCHEMA.view.rsOptElement.basic = [];
+                let m = SIREPO.APP_SCHEMA.model[$scope.modelName];
+
+                // dynamically change the schema
+                for (let p of $scope.rsOptParams) {
+                    const fp = shadowService.rsOptElementOffsetField(p);
+                    m[fp] = SIREPO.APP_SCHEMA.constants.rsOptDefaultOffsetInfo[p];
+                    $scope.rsOptElementFields.push(m[fp][SIREPO.INFO_INDEX_LABEL]);
+                    SIREPO.APP_SCHEMA.view.rsOptElement.basic.push(fp);
+                }
+                $scope.updateTotalSamples();
+            }
+
+            function updateElementWatchFields() {
+                for (let i = 0; i < $scope.model.elements.length; ++i) {
+                    let e = $scope.model.elements[i];
+                    for (let p of $scope.rsOptParams) {
+                        if (e[p]) {
+                            elementFields.push(`exportRsOpt.elements.${i}.${shadowService.rsOptElementOffsetField(p)}`);
+                        }
+                    }
+                }
+            }
+
+            function showRandomSeeed() {
+                panelState.showField('exportRsOpt', 'randomSeed', $scope.model.scanType === 'random');
+            }
+
+            $scope.$on('exportRsOpt.editor.show', () => {
+                updateElements();
+            });
+
+            updateElements();
+            updateElementWatchFields();
+            panelState.waitForUI(() => {
+                panelState.enableField('exportRsOpt', 'totalSamples', false);
+            });
+            appState.watchModelFields($scope, exportFields, $scope.updateTotalSamples);
+            appState.watchModelFields($scope, elementFields, $scope.updateTotalSamples);
+            appState.watchModelFields($scope, ['exportRsOpt.scanType'], showRandomSeeed);
+            $scope.$on('beamline.changed', updateElements);
+            $scope.$on('exportRsOpt.changed', updateElements);
+        },
     };
 });
 

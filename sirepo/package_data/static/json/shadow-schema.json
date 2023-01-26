@@ -1,6 +1,27 @@
 {
     "constants": {
-        "helpUserManualURL": "https://forge.epn-campus.eu/attachments/download/996/Shadow3Primer.pdf"
+        "helpUserManualURL": "https://forge.epn-campus.eu/attachments/download/996/Shadow3Primer.pdf",
+        "rsOptDefaultOffsetInfo": {
+            "position": ["Position [m]", "FloatStringArray", "0.0, 0.0, 0.0", "", "Horizontal, Vertical, Longitudinal"],
+            "radius": ["Radius [m]", "FloatStringArray", "0.0", "", "Radius"],
+            "rotation": ["Rotation [rad]", "FloatStringArray", "0.0, 0.0, 0.0", "", "𝞱x, 𝞱y, 𝞱z"],
+            "size": ["Size [m]", "FloatStringArray", "0.0, 0.0", "", "Horizontal, Vertical"]
+       },
+        "rsOptElements": {
+            "aperture": {
+                "position": {
+                    "fieldNames": ["horizontalOffset", "verticalOffset", "position"]
+                },
+                "size": {
+                    "fieldNames": ["horizontalSize", "verticalSize"]
+                }
+            },
+            "mirror": {
+                "position": {
+                    "fieldNames": ["", "", "position"]
+                }
+            }
+        }
     },
     "enum": {
         "AbsoluteOrigin": [
@@ -527,6 +548,15 @@
             "position": ["Nominal Position [m]", "Float"],
             "alpha": ["Orientation Angle [deg]", "OrientationAngle", 0]
         },
+        "exportRsOpt": {
+            "elements": ["Beamline Elements", "RSOptElements", []],
+            "numCores": ["Number of Cores", "Integer", 4],
+            "numSamples": ["Samples per Parameter", "Integer", 100, "", 1],
+            "numWorkers": ["Number of Workers", "Integer", 1],
+            "randomSeed": ["Random Seed", "RandomSeed", "", "Explicit seed for random numbers in the range [{{ SIREPO.APP_SCHEMA.model.exportRsOpt.randomSeed[SIREPO.INFO_INDEX_MIN] }}, {{ SIREPO.APP_SCHEMA.model.exportRsOpt.randomSeed[SIREPO.INFO_INDEX_MAX] }}). Leave empty to allow server to decide the seed.", 0, 4294967296],
+            "scanType": ["Scan Type", "ScanType", "random", "Grid samples each parameter uniformly. Random takes a random sample for each parameter."],
+            "totalSamples": ["Total Samples", "Integer", 100, "Grid: &lt;number of samples&gt;^&lt;number of params&gt;. Random: &lt;number of samples&gt;", 1]
+        },
         "geometricSource": {
             "f_color": ["Photon Energy Distribution", "PhotonEnergyDistribution", "3"],
             "singleEnergyValue": ["Value [eV]", "Float", 1000],
@@ -708,6 +738,11 @@
             "x2": ["X Maximum [mm]", "Float", 1e16],
             "z1": ["Z Minimum [mm]", "Float", -1e16],
             "z2": ["Z Maximum [mm]", "Float", 1e16]
+        },
+        "rsOptElement": {
+            "id": ["_", "Integer", -1],
+            "enabled": ["Enabled", "Boolean", "0"],
+            "title": ["_", "String", ""]
         },
         "simulation": {
             "sourceType": ["Source Type", "SourceType", "bendingMagnet"],
@@ -1016,6 +1051,17 @@
                 "alpha"
             ]
         },
+        "exportRsOpt": {
+            "title": "Machine Learning Input",
+            "basic": [
+                "elements",
+                "scanType",
+                "numSamples",
+                "totalSamples",
+                "randomSeed"
+            ],
+            "advanced": []
+        },
         "geometricSource": {
             "title": "Geometrical Source",
             "basic": [
@@ -1319,6 +1365,11 @@
             "advanced": [
                 "distanceFromSource"
             ]
+        },
+        "rsOptElement": {
+            "title": "rsopt Element",
+            "basic": [],
+            "advanced": []
         },
         "simulation": {
             "title": "Simulation",

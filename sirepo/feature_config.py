@@ -168,6 +168,13 @@ def _init():
             set,
             "React apps",
         ),
+        shadow=dict(
+            show_rsopt_ml=(
+                pkconfig.channel_in_internal_test(),
+                bool,
+                'Show "Export ML Script" menu item',
+            ),
+        ),
         sim_types=(set(), set, "simulation types (codes) to be imported"),
         slack_uri=(
             "https://slack.com/",
