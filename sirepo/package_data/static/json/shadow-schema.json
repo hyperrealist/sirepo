@@ -403,6 +403,13 @@
                 "controller": "BeamlineController as beamline",
                 "templateUrl": "/static/html/shadow-beamline.html"
             }
+        },
+        "ml": {
+            "route": "/ml/:simulationId",
+            "config": {
+                "controller": "MLController as ml",
+                "templateUrl": "/static/html/srw-ml.html"
+            }
         }
     },
     "model": {
