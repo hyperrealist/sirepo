@@ -1,6 +1,8 @@
 import numpy
+import time
 import re
 import os
+import epics
 from sirepo.template import template_common
 from pykern import pksubprocess
 
@@ -11,7 +13,7 @@ def run_epics_command(server_address, cmd):
 
 def read_epics_values(server_address, fields):
     assert server_address, "missing remote server address"
-    output = run_epics_command(server_address, ["caget", "-w", "5"] + fields)
+    output = run_epics_command(server_address, ["caget"] + fields)
     if not output:
         return None
     res = numpy.array(re.split(r"\s+", str(output))[1::2]).astype("float").tolist()
@@ -23,7 +25,7 @@ def write_epics_values(server_address, fields, values):
         if (
             run_epics_command(
                 server_address,
-                ["caput", "-w", "10", fields[idx], str(values[idx])],
+                ["caput", fields[idx], str(values[idx])],
             )
             is None
         ):
@@ -40,12 +42,18 @@ def epics_env(server_address):
 
 
 def run_sim(fields, address):
-    v = [x + 1 for x in read_epics_values(address, fields)]
-    write_epics_values(address, fields, v)
-    print("sim result=", read_epics_values(address, fields))
+    # v = [x + 1 for x in read_epics_values(address, fields)]
+    # write_epics_values(address, fields, v)
+    # print("sim result=", read_epics_values(address, fields))
+    epics.caput_many(f, [x + 1 for x in epics.caget_many(fields)])
+    time.sleep(0.5)
+    print("sim result=", epics.caget_many(fields))
 
 
 f = ['sr_epics:corrector1:HCurrent', 'sr_epics:corrector1:VCurrent', 'sr_epics:corrector2:HCurrent', 'sr_epics:corrector2:VCurrent', 'sr_epics:corrector3:HCurrent', 'sr_epics:corrector3:VCurrent', 'sr_epics:corrector4:HCurrent', 'sr_epics:corrector4:VCurrent']
 a = "0.0.0.0:5064"
 while True:
     run_sim(f, a)
+
+# for pv in f:
+#     print(epics.caget(pv))
