@@ -408,7 +408,7 @@
             "route": "/ml/:simulationId",
             "config": {
                 "controller": "MLController as ml",
-                "templateUrl": "/static/html/srw-ml.html"
+                "templateUrl": "/static/html/shadow-ml.html"
             }
         }
     },
