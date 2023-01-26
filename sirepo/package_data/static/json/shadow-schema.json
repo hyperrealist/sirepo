@@ -671,6 +671,14 @@
             "focal_x": ["Horizontal Focal Length [m]", "Float", 3],
             "focal_z": ["Vertical Focal Length [m]", "Float", 1.0e+23]
         },
+        "machineLearningAnimation": {
+            "jobRunMode": ["Execution Mode", "JobRunMode", "parallel"],
+            "tasksPerNode": ["Processes per node", "Integer", 32],
+            "sbatchCores": ["Cores", "Integer", 128],
+            "sbatchHours": ["Hours", "Float", 0.4],
+            "sbatchQueue": ["Queue", "NERSCQueue", "debug"],
+            "sbatchProject": ["Project", "OptionalString", ""]
+        },
         "mirror": {
             "_super": ["_", "model", "_MISALIGNED_ELEMENT"],
             "title": ["Element Name", "String", "Mirror"],
@@ -828,6 +836,11 @@
             "template_material": ["Template Material", "ReflectivityMaterial", "SiO2"],
             "n_points": ["Sampling Points", "Integer", 5000],
             "last_index": ["Last Index of Focal Image", "Integer", 100]
+        }
+    },
+    "strings": {
+        "machineLearningAnimation": {
+            "typeOfSimulation": "Data Generation"
         }
     },
     "view": {
@@ -1274,6 +1287,11 @@
                 "focal_x",
                 "focal_z"
             ]
+        },
+        "machineLearningAnimation": {
+            "title": "Machine Learning Training Data",
+            "basic": [],
+            "advanced": []
         },
         "mirror": {
             "_super": ["_", "view", "_MISALIGNED_ELEMENT_VIEW"],
