@@ -737,6 +737,9 @@ SIREPO.app.directive('fieldEditor', function(appState, keypressService, panelSta
                 <input data-validated-string="" data-field-validator-name=" utilities.modelFieldID(modelName, field)" data-ng-model="model[field]" class="form-control" data-lpignore="true" required />
                 <div class="sr-input-warning" data-ng-show="! form.$valid">{{ getWarningText() }}</div>
               </div>
+              <div data-ng-switch-when="RandomSeed" class="col-sm-7">
+                <div data-random-seed="" data-model="model" data-field="field" data-model-name="modelName" data-form="form" data-max="info[5]" data-view-name="viewName"></div>
+              </div>
               <div data-ng-switch-when="SafePath" data-ng-class="fieldClass">
                 <input data-safe-path="" data-ng-model="model[field]" class="form-control" data-lpignore="true" required />
                 <div class="sr-input-warning" data-ng-show="showWarning">{{warningText}}</div>

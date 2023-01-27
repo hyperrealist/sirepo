@@ -35,9 +35,6 @@ SIREPO.app.config(function() {
         <div data-ng-switch-when="MirrorFile" class="col-sm-7">
           <div data-mirror-file-field="" data-model="model" data-field="field" data-model-name="modelName" ></div>
         </div>
-        <div data-ng-switch-when="RandomSeed" class="col-sm-7">
-          <div data-random-seed="" data-model="model" data-field="field" data-model-name="modelName" data-form="form" data-max="info[5]" data-view-name="viewName"></div>
-        </div>
         <div data-ng-switch-when="RSOptElements" class="col-sm-12">
           <div data-rs-opt-elements="" data-model="model" data-field="field" data-model-name="modelName" data-form="form" data-field-class="fieldClass"></div>
         </div>

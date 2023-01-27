@@ -331,6 +331,10 @@
             ["3", "Fan Type"],
             ["5", "Polynomial Line Density"]
         ],
+        "ScanType": [
+            ["grid", "Grid"],
+            ["random", "Random"]
+        ],
         "SelectPhotonEnergy": [
             ["harmonic", "From Harmonic"],
             ["single", "Single Photon Energy"],

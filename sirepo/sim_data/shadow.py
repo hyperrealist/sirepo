@@ -21,6 +21,7 @@ class SimData(sirepo.sim_data.SimDataBase):
             (
                 "beamStatisticsReport",
                 "bendingMagnet",
+                "exportRsOpt",
                 "initialIntensityReport",
                 "plotXYReport",
                 "undulator",

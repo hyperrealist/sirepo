@@ -13,12 +13,10 @@ from sirepo.template import template_common
 import numpy
 import py.path
 import re
-import sirepo.template.shadow as template
 
 
 _MM_TO_CM = 0.1
 _CM_TO_M = 0.01
-_SCHEMA = simulation_db.get_schema(template.SIM_TYPE)
 
 _SCALE_COLUMNS = [1, 2, 3, 13, 20]
 _PLOT_LABELS = {
@@ -59,10 +57,6 @@ def run(cfg_dir):
     template_common.write_sequential_result(res)
 
 
-def run_background(cfg_dir):
-    pass
-
-
 def _label(column, values):
     for v in values:
         if column == v[0]:
@@ -85,6 +79,10 @@ def _label_with_units(column, values):
 
 
 def _run_beam_statistics(cfg_dir, data):
+    import sirepo.template.shadow as template
+
+    _SCHEMA = simulation_db.get_schema(template.SIM_TYPE)
+
     template_common.exec_parameters()
     report = data.models.beamStatisticsReport
     d = pkjson.load_any(py.path.local(cfg_dir).join(template.BEAM_STATS_FILE))
@@ -119,6 +117,10 @@ def _run_beam_statistics(cfg_dir, data):
 
 
 def _run_shadow(cfg_dir, data):
+    import sirepo.template.shadow as template
+
+    _SCHEMA = simulation_db.get_schema(template.SIM_TYPE)
+
     beam = template_common.exec_parameters().beam
     model = data["models"][data["report"]]
     column_values = _SCHEMA["enum"]["ColumnValue"]
