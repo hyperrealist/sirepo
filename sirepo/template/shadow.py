@@ -156,6 +156,13 @@ _FIELD_ALIAS = PKDict(
 
 _LOWERCASE_FIELDS = set(["focal_x", "focal_z"])
 
+#_OUTPUT_FOR_MODEL[f"{_SIM_DATA.EXPORT_RSOPT}"] = PKDict(
+#    filename=f"{_SIM_DATA.EXPORT_RSOPT}.zip",
+#)
+#_OUTPUT_FOR_MODEL.machineLearningAnimation = PKDict(
+#    filename=_SIM_DATA.ML_OUTPUT,
+#)
+
 _WIGGLER_TRAJECTORY_FILENAME = "xshwig.sha"
 
 

@@ -13,6 +13,10 @@ import scipy.constants
 class SimData(sirepo.sim_data.SimDataBase):
     ANALYSIS_ONLY_FIELDS = frozenset(("colorMap", "notes", "aspectRatio"))
 
+    EXPORT_RSOPT = "exportRsOpt"
+    ML_REPORT = "machineLearningAnimation"
+    ML_OUTPUT = "results.h5"
+
     @classmethod
     def fixup_old_data(cls, data, qcall, **kwargs):
         dm = data.models
@@ -23,6 +27,7 @@ class SimData(sirepo.sim_data.SimDataBase):
                 "bendingMagnet",
                 "exportRsOpt",
                 "initialIntensityReport",
+                "machineLearningAnimation",
                 "plotXYReport",
                 "undulator",
                 "undulatorBeam",
