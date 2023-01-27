@@ -163,6 +163,21 @@ _LOWERCASE_FIELDS = set(["focal_x", "focal_z"])
 #    filename=_SIM_DATA.ML_OUTPUT,
 #)
 
+_RSOPT_PARAMS = {
+    i
+    for sublist in [
+        v
+        for v in [
+            list(SCHEMA.constants.rsOptElements[k].keys())
+            for k in SCHEMA.constants.rsOptElements
+        ]
+    ]
+    for i in sublist
+}
+
+_RSOPT_PARAMS_NO_ROTATION = [p for p in _RSOPT_PARAMS if p != "rotation"]
+
+
 _WIGGLER_TRAJECTORY_FILENAME = "xshwig.sha"
 
 
