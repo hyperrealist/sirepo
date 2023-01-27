@@ -2098,6 +2098,7 @@ SIREPO.app.directive('panelHeading', function(appState, frameCache, panelState, 
         },
         template: `
             <div data-simple-heading="{{ panelHeading }}" data-model-key="modelKey">
+            <div class="model-panel-heading-buttons"></div>
               <a href data-ng-show="hasEditor && ! utilities.isFullscreen()" data-ng-click="showEditor()" title="Edit"><span class="sr-panel-heading glyphicon glyphicon-pencil"></span></a>
               ${SIREPO.appPanelHeadingButtons || ''}
               <div data-ng-if="isReport" data-ng-show="hasData() && ! utilities.isFullscreen()" class="dropdown" style="display: inline-block">
