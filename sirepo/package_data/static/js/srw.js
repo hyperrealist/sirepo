@@ -310,12 +310,15 @@ SIREPO.app.factory('srwService', function(activeSection, appDataService, appStat
     };
 
     self.updateRSOptElements = function() {
+        srdbg('updateRSOptElements');
         const optElModel = 'rsOptElement';
         const optEls = SIREPO.APP_SCHEMA.constants.rsOptElements;
         const items = (appState.models.beamline || []).filter(i => optEls[i.type]);
         const els = appState.models.exportRsOpt.elements;
+        srdbg('els', els);
         for (const item of items) {
             let e = self.findRSOptElement(item.id);
+            srdbg('e', e);
             if (e) {
                 // element name may have changed
                 e.title = item.title;
@@ -327,6 +330,7 @@ SIREPO.app.factory('srwService', function(activeSection, appDataService, appStat
             e.title = item.title;
             e.type = item.type;
             e.id = item.id;
+            srdbg('props', props, e);
             const props = optEls[item.type];
             for (const p in props) {
                 appState.setFieldDefaults(

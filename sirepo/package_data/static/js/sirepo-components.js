@@ -724,6 +724,9 @@ SIREPO.app.directive('fieldEditor', function(appState, keypressService, panelSta
                 <input data-string-to-number="" data-ng-model="model[field]" data-min="info[4]" data-max="info[5]" class="form-control" style="text-align: right" data-lpignore="true" required />
                 <div class="sr-input-warning"></div>
               </div>
+              <div data-ng-switch-when="FloatArray" class="col-sm-7">
+                <div data-num-array="" data-model="model" data-field-name="field" data-field="model[field]" data-info="info" data-num-type="Float"></div>
+              </div>
               <div data-ng-switch-when="OptionalString" data-ng-class="fieldClass">
                 <input data-ng-model="model[field]" class="form-control" data-lpignore="true" />
               </div>
@@ -736,9 +739,6 @@ SIREPO.app.directive('fieldEditor', function(appState, keypressService, panelSta
               <div data-ng-switch-when="ValidatedString" data-ng-class="fieldClass">
                 <input data-validated-string="" data-field-validator-name=" utilities.modelFieldID(modelName, field)" data-ng-model="model[field]" class="form-control" data-lpignore="true" required />
                 <div class="sr-input-warning" data-ng-show="! form.$valid">{{ getWarningText() }}</div>
-              </div>
-              <div data-ng-switch-when="RandomSeed" class="col-sm-7">
-                <div data-random-seed="" data-model="model" data-field="field" data-model-name="modelName" data-form="form" data-max="info[5]" data-view-name="viewName"></div>
               </div>
               <div data-ng-switch-when="SafePath" data-ng-class="fieldClass">
                 <input data-safe-path="" data-ng-model="model[field]" class="form-control" data-lpignore="true" required />

@@ -148,7 +148,6 @@ SIREPO.app.factory('shadowService', function(appState, beamlineService, panelSta
             e.type = item.type;
             e.id = item.id;
             const props = optEls[item.type];
-            srdbg('props', props);
             for (const p in props) {
                 appState.setFieldDefaults(
                     e,
@@ -731,7 +730,6 @@ SIREPO.app.directive('rsOptElements', function(appState, frameCache, panelState,
                             continue;
                         }
                         numParams += e[shadowService.rsOptElementOffsetField(p)]
-                            .split(',')
                             .reduce((c, x) => c + (parseFloat(x) ? 1 : 0), 0);
                     }
                 }
@@ -772,7 +770,6 @@ SIREPO.app.directive('rsOptElements', function(appState, frameCache, panelState,
                         s.add(k);
                     }
                 }
-                srdbg('parrams', s);
                 $scope.rsOptParams = [...s];
                 $scope.rsOptElementFields = [];
                 SIREPO.APP_SCHEMA.view.rsOptElement.basic = [];

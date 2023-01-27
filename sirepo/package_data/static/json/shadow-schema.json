@@ -2,10 +2,10 @@
     "constants": {
         "helpUserManualURL": "https://forge.epn-campus.eu/attachments/download/996/Shadow3Primer.pdf",
         "rsOptDefaultOffsetInfo": {
-            "position": ["Position [m]", "FloatStringArray", "0.0, 0.0, 0.0", "", "Horizontal, Vertical, Longitudinal"],
-            "radius": ["Radius [m]", "FloatStringArray", "0.0", "", "Radius"],
-            "rotation": ["Rotation [rad]", "FloatStringArray", "0.0, 0.0, 0.0", "", "𝞱x, 𝞱y, 𝞱z"],
-            "size": ["Size [m]", "FloatStringArray", "0.0, 0.0", "", "Horizontal, Vertical"]
+            "position": ["Position [m]", "FloatArray", [0.0, 0.0, 0.0], "", ["Horizontal", "Vertical", "Longitudinal"]],
+            "radius": ["Radius [m]", "FloatArray", [0.0], "", ["Radius"]],
+            "rotation": ["Rotation [rad]", "FloatArray", [0.0, 0.0, 0.0], "", ["𝞱x", "𝞱y", "𝞱z"]],
+            "size": ["Size [m]", "FloatArray", [0.0, 0.0], "", ["Horizontal", "Vertical"]]
        },
         "rsOptElements": {
             "aperture": {
