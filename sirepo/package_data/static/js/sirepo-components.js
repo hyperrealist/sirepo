@@ -724,7 +724,7 @@ SIREPO.app.directive('fieldEditor', function(appState, keypressService, panelSta
                 <input data-string-to-number="" data-ng-model="model[field]" data-min="info[4]" data-max="info[5]" class="form-control" style="text-align: right" data-lpignore="true" required />
                 <div class="sr-input-warning"></div>
               </div>
-              <div data-ng-switch-when="FloatArray" data-ng-class="fieldClass">
+              <div data-ng-switch-when="FloatArray" data-ng-class="col-sm-7">
                 <div data-num-array="" data-model="model" data-field-name="field" data-field="model[field]" data-info="info" data-num-type="Float"></div>
               </div>
               <div data-ng-switch-when="OptionalString" data-ng-class="fieldClass">
