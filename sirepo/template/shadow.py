@@ -267,6 +267,14 @@ def _eq(item, field, *values):
     )
 
 
+def _export_rsopt_config(data, run_dir):
+    ctx = _rsopt_jinja_context(data)
+    if _SIM_DATA.is_for_ml(data.report):
+        _write_rsopt_files(data, run_dir, ctx)
+    else:
+        _write_rsopt_zip(data, ctx)
+
+
 def _field_value(name, field, value):
     return "\n{}.{} = {}".format(
         name,
@@ -974,6 +982,34 @@ def _photon_energy(models):
     return (models[source_type].ph1 + models[source_type].ph2) / 2
 
 
+def _rsopt_jinja_context(data):
+    import multiprocessing
+
+    model = data.models[_SIM_DATA.EXPORT_RSOPT]
+    res = PKDict(
+        fileBase=_SIM_DATA.EXPORT_RSOPT,
+        forRSOpt=True,
+        libFiles=_SIM_DATA.lib_file_basenames(data),
+        numCores=int(model.numCores),
+        numWorkers=max(1, multiprocessing.cpu_count() - 1),
+        numSamples=int(model.numSamples),
+        outFileName=f"{_SIM_DATA.EXPORT_RSOPT}.out",
+        randomSeed=model.randomSeed if model.randomSeed is not None else "",
+        resultsFileName=_SIM_DATA.ML_OUTPUT,
+        rsOptCharacteristic=model.characteristic,
+        rsOptElements=_process_rsopt_elements(model.elements),
+        rsOptParams=_RSOPT_PARAMS,
+        rsOptParamsNoRotation=_RSOPT_PARAMS_NO_ROTATION,
+        rsOptOutFileName="scan_results",
+        runInSirepo=data.report == _SIM_DATA.ML_REPORT,
+        scanType=model.scanType,
+        totalSamples=model.totalSamples,
+        zipFileName=f"{_SIM_DATA.EXPORT_RSOPT}.zip",
+    )
+    res.update(_export_rsopt_files())
+    return res
+
+
 def _scale_units(data):
     for name in _MODEL_UNITS.unit_def:
         if name in data.models:
@@ -996,6 +1032,43 @@ def _validate_data(data, schema):
             und.emax = und.photon_energy
         if und.emin == und.emax:
             und.ng_e = 1
+
+
+def _write_rsopt_files(data, run_dir, ctx):
+    for f in _export_rsopt_files().values():
+        pkio.write_text(
+            run_dir.join(f),
+            python_source_for_model(data, data.report, None, plot_reports=False)
+            if f == f"{_SIM_DATA.EXPORT_RSOPT}.py"
+            else template_common.render_jinja(SIM_TYPE, ctx, f),
+        )
+
+
+def _write_rsopt_zip(data, ctx):
+    import zipfile
+    def _write(zip_file, path):
+        zip_file.writestr(
+            path,
+            python_source_for_model(data, data.report, None, plot_reports=False)
+            if path == f"{_SIM_DATA.EXPORT_RSOPT}.py"
+            else template_common.render_jinja(SIM_TYPE, ctx, path),
+        )
+
+    filename = f"{_SIM_DATA.EXPORT_RSOPT}.zip"
+    with zipfile.ZipFile(
+        f"{_SIM_DATA.EXPORT_RSOPT}.zip",
+        mode="w",
+        compression=zipfile.ZIP_DEFLATED,
+        allowZip64=True,
+    ) as z:
+        for f in _export_rsopt_files().values():
+            _write(z, f)
+        for f in ctx.libFiles:
+            z.write(f, f)
+    return PKDict(
+        content_type="application/zip",
+        filename=filename,
+    )
 
 
 _MODEL_UNITS = _init_model_units()
