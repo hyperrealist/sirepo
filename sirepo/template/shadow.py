@@ -290,6 +290,19 @@ def _export_rsopt_config(data, run_dir):
         _write_rsopt_zip(data, ctx)
 
 
+def _export_rsopt_files():
+    files = PKDict()
+    for t in (
+        "py",
+        "sh",
+        "yml",
+    ):
+        files[f"{t}FileName"] = f"{_SIM_DATA.EXPORT_RSOPT}.{t}"
+    files.postProcFileName = f"{_SIM_DATA.EXPORT_RSOPT}_post.py"
+    files.readmeFileName = "README.txt"
+    return files
+
+
 def _field_value(name, field, value):
     return "\n{}.{} = {}".format(
         name,
