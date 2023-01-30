@@ -54,6 +54,3 @@ f = ['sr_epics:corrector1:HCurrent', 'sr_epics:corrector1:VCurrent', 'sr_epics:c
 a = "0.0.0.0:5064"
 while True:
     run_sim(f, a)
-
-# for pv in f:
-#     print(epics.caget(pv))
