@@ -804,9 +804,10 @@ SIREPO.app.controller('BeamlineController', function (activeSection, appState, b
     });
 });
 
-SIREPO.app.controller('MLController', function (appState, panelState, persistentSimulation, requestSender, srwService, $scope, $window) {
+SIREPO.app.controller('MLController', function (appState, frameCache, panelState, persistentSimulation, requestSender, srwService, $scope, $window) {
     const self = this;
     self.appState = appState;
+    self.errorMessage = '';
     self.srwService = srwService;
     self.simScope = $scope;
     self.resultsFile = null;
@@ -849,7 +850,9 @@ SIREPO.app.controller('MLController', function (appState, panelState, persistent
     };
 
     self.simHandleStatus = data => {
+        self.errorMessage = data.error;
         if (data.error) {
+            frameCache.setFrameCount(1);
         }
         if ('percentComplete' in data && ! data.error) {
             if (self.simState.isStateCompleted()) {
@@ -861,6 +864,7 @@ SIREPO.app.controller('MLController', function (appState, panelState, persistent
     };
 
     self.startSimulation = model => {
+        self.errorMessage = '';
         self.resultsFile = null;
         self.simState.saveAndRunSimulation([model, 'simulation']);
     };
