@@ -156,12 +156,12 @@ _FIELD_ALIAS = PKDict(
 
 _LOWERCASE_FIELDS = set(["focal_x", "focal_z"])
 
-#_OUTPUT_FOR_MODEL[f"{_SIM_DATA.EXPORT_RSOPT}"] = PKDict(
+# _OUTPUT_FOR_MODEL[f"{_SIM_DATA.EXPORT_RSOPT}"] = PKDict(
 #    filename=f"{_SIM_DATA.EXPORT_RSOPT}.zip",
-#)
-#_OUTPUT_FOR_MODEL.machineLearningAnimation = PKDict(
+# )
+# _OUTPUT_FOR_MODEL.machineLearningAnimation = PKDict(
 #    filename=_SIM_DATA.ML_OUTPUT,
-#)
+# )
 
 _RSOPT_PARAMS = {
     i
@@ -1072,6 +1072,7 @@ def _write_rsopt_files(data, run_dir, ctx):
 
 def _write_rsopt_zip(data, ctx):
     import zipfile
+
     def _write(zip_file, path):
         zip_file.writestr(
             path,

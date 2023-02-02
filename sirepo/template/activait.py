@@ -182,21 +182,19 @@ def new_simulation(data, new_sim_data, qcall, **kwargs):
     data.models.dataFile.dataOrigin = "file"
     t = simulation_db.simulation_lib_dir(_SIM_DATA.sim_type(), qcall=qcall).join(
         _SIM_DATA.lib_file_name_with_model_field(
-            "dataFile",
-            "file",
-            data.models.dataFile.file
+            "dataFile", "file", data.models.dataFile.file
         )
     )
     if t.exists():
         return
-    #TODO(mvk) - symlink is a temporary solution to avoid copying large files
+    # TODO(mvk) - symlink is a temporary solution to avoid copying large files
     # Will not work on distributed systems. The planned sim db file server will fill
     # this role
     t.mksymlinkto(
         simulation_db.simulation_dir(
             new_sim_data.sourceSimType, sid=new_sim_data.sourceSimId, qcall=qcall
         ).join(new_sim_data.sourceSimFile),
-        absolute=False
+        absolute=False,
     )
 
 
