@@ -2,7 +2,6 @@ import { useContext, useState, useRef, useEffect } from "react";
 import { Dependency } from "../data/dependency";
 import { LayoutProps, Layout } from "./layout";
 import { cancelReport, pollRunReport, ResponseHasState } from "../utility/compute";
-import { v4 as uuidv4 } from 'uuid';
 import { useStore } from "react-redux";
 import { ProgressBar, Stack, Button } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -20,6 +19,8 @@ import { CAppName, CSchema, CSimulationInfoPromise } from "../data/appwrapper";
 import { ValueSelectors } from "../hook/string";
 import { SchemaLayout } from "../utility/schema";
 import { CRouteHelper } from "../utility/route";
+import { useLatestCallback } from "../hook/callback";
+import { useUniqueKey } from "../hook/key";
 
 
 export type ReportVisualProps<L> = { data: L };
@@ -63,12 +64,12 @@ export class AutoRunReportLayout extends Layout<AutoRunReportConfig, {}> {
 
         let [simulationData, updateSimulationData] = useState(undefined);
 
-        let simulationPollingVersionRef = useRef(uuidv4())
+        let simulationPollingCallback = useLatestCallback(
+            (simulationData) => updateSimulationData(simulationData)
+        )
 
         useEffect(() => {
             updateSimulationData(undefined);
-            let pollingVersion = uuidv4();
-            simulationPollingVersionRef.current = pollingVersion;
             simulationInfoPromise.then(({ models, simulationId, simulationType, version }) => {
                 pollRunReport(routeHelper, {
                     appName,
@@ -76,14 +77,7 @@ export class AutoRunReportLayout extends Layout<AutoRunReportConfig, {}> {
                     simulationId,
                     report: report,
                     forceRun: false,
-                    callback: (simulationData) => {
-                        // guard concurrency
-                        if(simulationPollingVersionRef.current === pollingVersion) {
-                            updateSimulationData(simulationData);
-                        } else {
-                            console.log("polling data was not from newest request");
-                        }
-                    }
+                    callback: simulationPollingCallback
                 })
             })
         }, dependentValues)
@@ -92,10 +86,12 @@ export class AutoRunReportLayout extends Layout<AutoRunReportConfig, {}> {
         let canShow = this.reportLayout.canShow(simulationData);
         let LayoutComponent = this.reportLayout.component;
 
+        let k = useUniqueKey();
+
         // set the key as the key for the latest request sent to make a brand new report component for each new request data
         return (
             <>
-                {canShow && <LayoutComponent key={simulationPollingVersionRef.current} data={reportVisualConfig}/>}
+                {canShow && <LayoutComponent key={k} data={reportVisualConfig}/>}
                 {!canShow && <ProgressBar animated now={100}/>}
             </>
         )
@@ -151,7 +147,7 @@ export class ManualRunReportLayout extends Layout<ManualRunReportConfig, {}> {
         let routeHelper = useContext(CRouteHelper);
         let panelController = useContext(CPanelController);
 
-        let reportEventsVersionRef = useRef(uuidv4())
+        let reportEventsKey = useUniqueKey();
 
         let shown = useShown(shownConfig, true, modelsWrapper, ValueSelectors.Models);
 
@@ -166,7 +162,7 @@ export class ManualRunReportLayout extends Layout<ManualRunReportConfig, {}> {
         }, [0])
 
         useEffect(() => {
-            reportEventManager.addListener(reportEventsVersionRef.current, reportGroupName, {
+            reportEventManager.addListener(reportEventsKey, reportGroupName, {
                 onStart: () => {
                     updateAnimationReader(undefined);
                     panelController.setShown(false);
@@ -188,16 +184,6 @@ export class ManualRunReportLayout extends Layout<ManualRunReportConfig, {}> {
                                     hasAnimationControls: s.hasAnimationControls,
                                 });
 
-                                /*// if the reader is at the old end or was not previously defined
-                                if(!animationReader || animationReader.nextFrameIndex >= animationReader.frameCount - 1) {
-                                    // seek end
-                                    console.log("seeking end");
-                                    newAnimationReader.seekEnd();
-                                } else {
-                                    console.log(`seeking same; next=${animationReader.nextFrameIndex} oldcount=${animationReader.frameCount} newcount=${newAnimationReader.frameCount}`);
-                                    newAnimationReader.seekFrame(animationReader.nextFrameIndex);
-                                }*/
-
                                 updateAnimationReader(newAnimationReader);
                             } else {
                                 updateAnimationReader(undefined);
@@ -206,7 +192,7 @@ export class ManualRunReportLayout extends Layout<ManualRunReportConfig, {}> {
                     })
                 }
             })
-            return () => reportEventManager.clearListenersForKey(reportEventsVersionRef.current);
+            return () => reportEventManager.clearListenersForKey(reportEventsKey);
         })
 
         // set the key as the key for the latest request sent to make a brand new report component for each new request data
