@@ -778,6 +778,9 @@ SIREPO.app.directive('fieldEditor', function(appState, keypressService, panelSta
               <div data-ng-switch-when="ModelArray" class="col-sm-12">
                 <div data-model-array="" data-model-name="modelName" data-model="model" data-field="field"></div>
               </div>
+              <div data-ng-switch-when="RandomSeed" class="col-sm-7">
+                <div data-random-seed="" data-model="model" data-field="field" data-model-name="modelName" data-form="form" data-max="info[5]" data-view-name="viewName"></div>
+              </div>
               ${SIREPO.appFieldEditors}
               <div data-ng-switch-default data-ng-class="fieldClass">
                 <div data-ng-if="wantEnumButtons" class="btn-group">
