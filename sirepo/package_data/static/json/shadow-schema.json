@@ -1253,10 +1253,10 @@
             "basic": [],
             "advanced": [
                 [
-                    ["Horizontal", [
+                    ["Horizontal Axis", [
                      "x"
                     ]],
-                    ["Vertical", [
+                    ["Vertical Axis", [
                      "y"
                     ]]
                 ],
@@ -1264,11 +1264,11 @@
                 "histogramBins",
                 "overrideSize",
                 [
-                    ["Horizontal", [
+                    ["Horizontal Axis", [
                         "horizontalSize",
                         "horizontalOffset"
                     ]],
-                    ["Vertical", [
+                    ["Vertical Axis", [
                         "verticalSize",
                         "verticalOffset"
                     ]]
