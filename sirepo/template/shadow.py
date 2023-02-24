@@ -5,10 +5,10 @@
 :license: http://www.apache.org/licenses/LICENSE-2.0.html
 """
 
-from __future__ import absolute_import, division, print_function
 from pykern import pkio
 from pykern.pkcollections import PKDict
 from pykern.pkdebug import pkdc, pkdp
+from sirepo.template import rsopt
 from sirepo.template import template_common
 from sirepo.template.template_common import ModelUnits
 import sirepo.template.srw_shadow
@@ -163,20 +163,8 @@ _LOWERCASE_FIELDS = set(["focal_x", "focal_z"])
 #    filename=_SIM_DATA.ML_OUTPUT,
 # )
 
-_RSOPT_PARAMS = {
-    i
-    for sublist in [
-        v
-        for v in [
-            list(SCHEMA.constants.rsOptElements[k].keys())
-            for k in SCHEMA.constants.rsOptElements
-        ]
-    ]
-    for i in sublist
-}
-
-_RSOPT_PARAMS_NO_ROTATION = [p for p in _RSOPT_PARAMS if p != "rotation"]
-
+_RSOPT_PARAMS = rsopt.rsopt_params(SCHEMA.constants.rsOptElements)
+_RSOPT_PARAMS_NO_ROTATION = rsopt.rsopt_params(SCHEMA.constants.rsOptElements, rotations=False)
 
 _WIGGLER_TRAJECTORY_FILENAME = "xshwig.sha"
 

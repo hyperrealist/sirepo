@@ -10,6 +10,7 @@ from pykern.pkcollections import PKDict
 from pykern.pkdebug import pkdc, pkdexc, pkdlog, pkdp
 from sirepo import crystal
 from sirepo import simulation_db
+from sirepo.template import rsopt
 from sirepo.template import srw_common
 from sirepo.template import template_common
 import array
@@ -147,18 +148,8 @@ _LOG_DIR = "__srwl_logs__"
 
 _JSON_MESSAGE_EXPANSION = 20
 
-_RSOPT_PARAMS = {
-    i
-    for sublist in [
-        v
-        for v in [
-            list(SCHEMA.constants.rsOptElements[k].keys())
-            for k in SCHEMA.constants.rsOptElements
-        ]
-    ]
-    for i in sublist
-}
-_RSOPT_PARAMS_NO_ROTATION = [p for p in _RSOPT_PARAMS if p != "rotation"]
+_RSOPT_PARAMS = rsopt.rsopt_params(SCHEMA.constants.rsOptElements)
+_RSOPT_PARAMS_NO_ROTATION = rsopt.rsopt_params(SCHEMA.constants.rsOptElements, rotations=False)
 
 _PROGRESS_LOG_DIR = "__srwl_logs__"
 
@@ -170,6 +161,16 @@ _USER_MODEL_LIST_FILENAME = PKDict(
 )
 
 _IMPORT_PYTHON_POLLS = 60
+
+
+class _RSOptSRW(rsopt.RSOptBase):
+
+    def __init__(self):
+        super().__init__(SCHEMA.constants.rsOptElements)
+
+
+    def safe_item_name(self, name, name_list):
+        return _safe_beamline_item_name(name, name_list)
 
 
 class MagnMeasZip:
