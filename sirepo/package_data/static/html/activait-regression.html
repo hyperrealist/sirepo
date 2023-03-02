@@ -29,14 +29,10 @@
       <div class="container" data-ng-repeat="report in regression.reports track by report.columnNumber">
         <div class="row">
           <div class="col-md-6 col-xxl-4">
-            <div data-basic-editor-panel="" data-view-name="segmentViewer" data-ng-if="regression.imageToImage()">
-              <div data-image-preview-panel="" data-image-class="srw-processed-image" data-method="segmentViewer"></div>
-            </div>
-            <div data-basic-editor-panel="" data-view-name="bestLosses" data-ng-if="regression.imageToImage()">
-              <div data-image-preview-panel="" data-image-class="best-losses"  data-method="bestLosses"></div>
-            </div>
-            <div data-basic-editor-panel="" data-view-name="worstLosses" data-ng-if="regression.imageToImage()">
-              <div data-image-preview-panel="" data-image-class="worst-losses"  data-method="worstLosses"></div>
+            <div data-ng-repeat="(index, obj) in [['segmentViewer', 'srw-processed-image'],['bestLosses', 'best-losses'], ['worstLosses', 'worst-losses']]">
+              <div data-basic-editor-panel="" data-view-name="{{ obj[0] }}" data-ng-if="regression.imageToImage()">
+                <div data-image-preview-panel="" data-image-class="{{ obj[1] }}" data-method="{{ obj[0] }}"></div>
+              </div>
             </div>
           </div>
           <div class="col-md-6 col-xxl-4">
