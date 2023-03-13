@@ -2462,12 +2462,8 @@ SIREPO.app.directive('3dBuilder', function(appState, geometry, layoutService, pa
                     tooltip = selection.append('title');
                 }
                 tooltip.text(function(d) {
-                    const ctr = d.getCenterCoords().map(function (c) {
-                        return utilities.roundToPlaces(c * invObjScale, 2);
-                    });
-                    const sz = d.getSizeCoords().map(function (c) {
-                        return utilities.roundToPlaces(c * invObjScale, 2);
-                    });
+                    const ctr = d.getCenterCoords().map( c=> utilities.roundToPlaces(c * invObjScale, 2));
+                    const sz = d.getSizeCoords().map(c=> utilities.roundToPlaces(c * invObjScale, 2));
                     return `${d.id} ${d.name} center : ${ctr} size: ${sz}`;
                 });
             }

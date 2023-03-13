@@ -88,11 +88,7 @@ class AbstractPlotShape {
     }
 
     getCoords(obj) {
-        const coords = [];
-        for (const dim of this.axes) {
-            coords.push(obj[dim]);
-        }
-        return coords;
+        return this.axes.map(dim => obj[dim]);
     }
 
     // link this shape to another so that some aspect of the linked shape is tied to
