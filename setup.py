@@ -8,7 +8,7 @@ import os
 import pykern.pksetup
 
 install_requires = [
-    "Flask==2.0.3",
+    "Flask",
     "SQLAlchemy>=1.4,<2",
     "aenum",
     "asyncssh",
@@ -22,7 +22,7 @@ install_requires = [
     "requests",
     "tornado",
     "user-agents",
-    "werkzeug==2.0.3",
+    "werkzeug",
     # Optional dependencies
     # required for email login and smtp
     "Authlib>=0.13",
