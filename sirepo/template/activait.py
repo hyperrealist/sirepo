@@ -1163,18 +1163,19 @@ def _image_preview(data, run_dir=None):
         return _image_grid(len(x))
 
     def _set_image_to_image_plt(plt, data):
-        _, a = plt.subplots(3, 2)
+        _, a = plt.subplots(3, 3)
         if data.args.method in ("segmentViewer", "bestLosses", "worstLosses"):
-            a[0, 0].set_title("actual")
-            a[0, 1].set_title("prediction")
+            a[0, 0].set_title("image")
+            a[0, 1].set_title("mask actual")
+            a[0, 2].set_title("mask pred")
         plt.setp(a, xticks=[], yticks=[])
         return a
 
     def _gen_image(params):
         if _image_to_image(info):
             mask = params.output
-            params.axes[params.row, 0].imshow(params.input)
-            params.axes[params.row, 1].imshow(mask)
+            params.axes[params.row, 1].imshow(params.input)
+            params.axes[params.row, 2].imshow(mask)
             return
         params.plt.subplot(5, 5, params.row + 1)
         params.plt.xticks([])
