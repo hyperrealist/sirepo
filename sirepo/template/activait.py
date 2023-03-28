@@ -1083,6 +1083,8 @@ def _data_url(filename):
 
 
 def _masks(out_width, run_dir):
+    # TODO (gurhar1133): in this case need to write corresponding
+    # original images to file to be read here
     x = _read_file(run_dir, _OUTPUT_FILE.testFile)
     x = x.reshape(len(x) // out_width // out_width, out_width, out_width)
     y = _read_file(run_dir, _OUTPUT_FILE.predictFile)
@@ -1143,6 +1145,7 @@ def _image_preview(data, run_dir=None):
             worstLosses=_read_file(run_dir, _OUTPUT_FILE.worstFile),
         )[method].flatten()
         i.sort()
+        # TODO (gurhar1133): use indices to get original images
         x = _read_file(run_dir, _OUTPUT_FILE.testFile)
         y = _read_file(run_dir, _OUTPUT_FILE.predictFile)
         return (
