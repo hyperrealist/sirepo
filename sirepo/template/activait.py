@@ -1129,9 +1129,12 @@ class _ImagePreview:
             if info.dtypeKind[idx] in {"U", "S"}:
                 io.output.label_path = info.header[idx]
                 break
+
         if _param_to_image(info):
+            c = self.data.args.columnInfo
+            i = c.inputOutput.index("input")
             io.input = PKDict(
-                path="metadata/control_settings",
+                path=c.header[i],
                 kind="f",
             )
         self.info = info
@@ -1297,9 +1300,20 @@ class _ImagePreview:
     def images(self):
         import matplotlib.pyplot as plt
 
+        def _short_g(grid, max_length):
+            n = []
+            s = 0
+            for g in grid:
+                s += g
+                if s > max_length:
+                    return n
+                n.append(g)
+            return n
+
         with h5py.File(_filepath(self.data.args.dataFile.file), "r") as f:
             self.file = f
             x, y, o = self._x_y()
+            assert len(x) == len(y), f"unequal lengths for x={len(x)} y={len(y)}"
             u = []
             k = 0
             g = (
@@ -1307,6 +1321,8 @@ class _ImagePreview:
                 if self.data.args.method not in ("bestLosses", "worstLosses")
                 else [_SEGMENT_ROWS]
             )
+            if sum(g) > len(x):
+                g = _short_g(g, len(x))
             for i in g:
                 plt.figure(figsize=[10, 10])
                 self.axes = (
