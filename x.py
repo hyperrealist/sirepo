@@ -123,7 +123,7 @@ class _Renamer:
                 r.append(line.split(":")[0])
         if len(r) > 0:
             for line in r:
-                print(r)
+                print(line)
             raise AssertionError(f"{len(r)} REFERENCES TO {self.old_app_name} FOUND")
         print(f"No references to old_app_name={self.old_app_name} found")
 
