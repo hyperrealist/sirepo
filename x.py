@@ -1,5 +1,7 @@
 import os
+import sys
 import re
+import subprocess
 from pykern import pkunit
 from pykern import pksetup
 from pykern import pkio
@@ -48,14 +50,32 @@ class _Renamer:
                 print(d, "does not exist (anymore)")
 
     def _rename_references(self):
-        # replace all instances of app_name in
-        # source code. Needs to include different cases
-        # ie myapp, my_app, MyApp or whatever
-        pass
+        # assert 0, f"{self.old_app_name} {self.new_app_name}"
+        p = subprocess.run(
+            [
+                "grep",
+                "-r",
+                "-i",
+                "-I",
+                "--exclude-dir='.pytest_cache'",
+                "--exclude-dir='run'",
+                "--exclude='./x.py'",
+                "--exclude-dir='sirepo.egg-info'",
+                f"{self.old_app_name}",
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        print("len", len(p.stdout))
+        if len(p.stdout) > 0:
+            raise AssertionError(f"REFERENCES TO {self.old_app_name} FOUND:\n{p.stdout}")
+        print(f"No references to old_app_name={self.old_app_name} found")
 
     def rename(self):
         print(f"renaming {self.old_app_name} to {self.new_app_name}")
         self._rename_paths()
         self._rename_references()
 
-_Renamer("myapp", "mybetterapp").rename()
+# _Renamer("myapp", "mybetterapp").rename()
+a = sys.argv
+_Renamer(a[1], a[2])._rename_references()
