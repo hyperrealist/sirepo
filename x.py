@@ -102,7 +102,10 @@ class _Renamer:
         )
         print("len", len(p.stdout))
         if len(p.stdout) > 0:
-            raise AssertionError(f"REFERENCES TO {self.old_app_name} FOUND:\n{p.stdout}")
+            references = ""
+            for line in p.stdout:
+                reference += f"\n{line}"
+            raise AssertionError(f"REFERENCES TO {self.old_app_name} FOUND:\n{references}")
         print(f"No references to old_app_name={self.old_app_name} found")
 
     def rename(self):
