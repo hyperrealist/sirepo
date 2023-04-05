@@ -9,7 +9,7 @@ from pykern.pkdebug import pkdp
 
 _EXCLUDE_FILES = re.compile(
     # TODO (gurhar1133): different exclude for replacement?
-    r".*(_console\.py)|^venv/" + r"|^run/" + r"|__pycache__/|.git|.cache|node_modules|react/public|.png|.jpg|.woff|.eot|.ttf|.tif|.gif|.ico|.h5m|.sdds|.zip|.db|.csv|.h5"
+    r".*(_console\.py)|^venv/" + r"|^run/" + r"|__pycache__/|.git|.cache|node_modules|react/public|.png|.jpg|.woff|.eot|.ttf|.tif|.gif|.ico|.h5m|.sdds|.zip|.db|.csv|.h5|.bun|.stl"
 )
 
 
@@ -67,7 +67,7 @@ class _Renamer:
         for f in pkio.walk_tree("./"):
             if self._exlude(f):
                 continue
-            print("attempting replacement on", f.basename)
+            print("attempting replacement on", f.dirname + "/" + f.basename)
             with pkio.open_text(f) as t:
                 # TODO (gurhar1133): need to handle camel case etc
                 t = t.read()
@@ -119,7 +119,7 @@ class _Renamer:
         if len(output) > 0:
             for line in output:
                 print(line)
-            raise AssertionError(f"REFERENCES TO {self.old_app_name} FOUND")
+            raise AssertionError(f"{len(output)} REFERENCES TO {self.old_app_name} FOUND")
         print(f"No references to old_app_name={self.old_app_name} found")
 
     def rename(self):
@@ -127,6 +127,6 @@ class _Renamer:
         self._rename_paths()
         self._rename_references()
 
-# _Renamer("myapp", "mybetterapp").rename()
+# _Renamer("mybetterappname", "mybetterapp").rename()
 a = sys.argv
 _Renamer(a[1], a[2])._rename_references()
