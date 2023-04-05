@@ -11,15 +11,18 @@ _EXCLUDE_FILES = re.compile(
     r".*(_console\.py)|^tests/|^venv/" + r"|^run/" + r"|__pycache__/"
 )
 
+_INCLUDE_FILES = "?"
+
 class _Renamer:
     def __init__(self, old_app_name, new_app_name):
         self.old_app_name = old_app_name
         self.new_app_name = new_app_name
         self.exclude_files = _EXCLUDE_FILES
+        self.include_files = _INCLUDE_FILES
 
     def _iterate(self, rename_function):
         for f in pkio.walk_tree("./"):
-            if re.search(_EXCLUDE_FILES, pkio.py_path().bestrelpath(f)):
+            if self._exlude(f):
                 continue
             rename_function(f)
 
@@ -50,7 +53,33 @@ class _Renamer:
                 print(d, "does not exist (anymore)")
 
     def _rename_references(self):
-        # assert 0, f"{self.old_app_name} {self.new_app_name}"
+        self._replace_references()
+        self._raise_for_references()
+
+
+    def _exlude(self, file):
+        return re.search(self.exclude_files, pkio.py_path().bestrelpath(file))
+
+
+    def _replace_references(self):
+        for f in pkio.walk_tree("./"):
+            if self._exlude(f):
+                continue
+
+            if f.basename in ("myapp.py", "admin.py"):
+                with pkio.open_text(f) as t:
+                    text = t.read()
+                    # TODO (gurhar1133): need to handle camel case etc
+                    if re.search(re.compile(self.old_app_name), text):
+                        # TODO (gurhar1133): new_app_name needs to match the case of
+                        # old_app_name
+                        pkio.write_text(
+                            f,
+                            text.replace(self.old_app_name, self.new_app_name)
+                        )
+
+
+    def _raise_for_references(self):
         p = subprocess.run(
             [
                 "grep",
