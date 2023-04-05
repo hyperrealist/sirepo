@@ -97,6 +97,7 @@ class _Renamer:
                 "--exclude-dir='run'",
                 "--exclude='./x.py'",
                 "--exclude-dir='sirepo.egg-info'",
+                f"--exclude-dir={self.exclude_files}"
                 f"{self.old_app_name}",
             ]
         ).decode('utf-8').split('\n')[:-1]
