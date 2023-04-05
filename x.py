@@ -120,7 +120,7 @@ class _Renamer:
         r = []
         for line in output:
             if not re.search(self.exclude_files, line):
-                r.append(line)
+                r.append(line.split(":")[0])
         if len(r) > 0:
             for line in r:
                 print(r)
