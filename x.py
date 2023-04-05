@@ -66,17 +66,20 @@ class _Renamer:
             if self._exlude(f):
                 continue
 
-            if f.basename in ("myapp.py", "admin.py"):
-                with pkio.open_text(f) as t:
-                    text = t.read()
-                    # TODO (gurhar1133): need to handle camel case etc
-                    if re.search(re.compile(self.old_app_name), text):
-                        # TODO (gurhar1133): new_app_name needs to match the case of
-                        # old_app_name
-                        pkio.write_text(
-                            f,
-                            text.replace(self.old_app_name, self.new_app_name)
-                        )
+            with pkio.open_text(f) as t:
+                # TODO (gurhar1133): need to handle camel case etc
+                self._replace(f, t.read(), self.old_app_name, self.new_app_name)
+                self._replace(f, t.read(), self.old_app_name.title(), self.new_app_name.title())
+
+
+    def _replace(self, file, text, reference, replacement):
+        if re.search(re.compile(reference), text):
+            # TODO (gurhar1133): new_app_name needs to match the case of
+            # old_app_name
+            pkio.write_text(
+                file,
+                text.replace(reference, replacement)
+            )
 
 
     def _raise_for_references(self):
