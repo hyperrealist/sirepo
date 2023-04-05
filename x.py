@@ -8,8 +8,9 @@ from pykern import pkio
 from pykern.pkdebug import pkdp
 
 _EXCLUDE_FILES = re.compile(
-    r".*(_console\.py)|^tests/|^venv/" + r"|^run/" + r"|__pycache__/"
+    r".*(_console\.py)|^tests/|^venv/" + r"|^run/" + r"|__pycache__/|.git|.cache|node_modules|react/public|.png|.jpg|.woff|.eot|.ttf|.tif|.gif|.ico|.h5m|.sdds|.zip"
 )
+
 
 _INCLUDE_FILES = "?"
 
