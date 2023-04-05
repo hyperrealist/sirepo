@@ -9,7 +9,7 @@ from pykern.pkdebug import pkdp
 
 _EXCLUDE_FILES = re.compile(
     # TODO (gurhar1133): different exclude for replacement?
-    r".*(_console\.py)|^venv/" + r"|^run/" + r"|__pycache__/|.git|.cache|node_modules|react/public|.png|.jpg|.woff|.eot|.ttf|.tif|.gif|.ico|.h5m|.sdds|.zip|.db"
+    r".*(_console\.py)|^venv/" + r"|^run/" + r"|__pycache__/|.git|.cache|node_modules|react/public|.png|.jpg|.woff|.eot|.ttf|.tif|.gif|.ico|.h5m|.sdds|.zip|.db|.csv|.h5"
 )
 
 
