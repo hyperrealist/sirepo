@@ -8,7 +8,7 @@ from pykern import pkio
 from pykern.pkdebug import pkdp
 
 _EXCLUDE_FILES = re.compile(
-    r".*(_console\.py)|^tests/|^venv/" + r"|^run/" + r"|__pycache__/|.git|.cache|node_modules|react/public|.png|.jpg|.woff|.eot|.ttf|.tif|.gif|.ico|.h5m|.sdds|.zip"
+    r".*(_console\.py)|^venv/" + r"|^run/" + r"|__pycache__/|.git|.cache|node_modules|react/public|.png|.jpg|.woff|.eot|.ttf|.tif|.gif|.ico|.h5m|.sdds|.zip"
 )
 
 
@@ -85,7 +85,8 @@ class _Renamer:
 
 
     def _raise_for_references(self):
-        p = subprocess.run(
+
+        output = subprocess.check_output(
             [
                 "grep",
                 "-r",
@@ -96,16 +97,28 @@ class _Renamer:
                 "--exclude='./x.py'",
                 "--exclude-dir='sirepo.egg-info'",
                 f"{self.old_app_name}",
-            ],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        print("len", len(p.stdout))
-        if len(p.stdout) > 0:
-            references = ""
-            for line in p.stdout:
-                reference += f"\n{line}"
-            raise AssertionError(f"REFERENCES TO {self.old_app_name} FOUND:\n{references}")
+            ]
+        ).decode('utf-8').split('\n')[:-1]
+        # p = subprocess.run(
+        #     [
+        #         "grep",
+        #         "-r",
+        #         "-i",
+        #         "-I",
+        #         "--exclude-dir='.pytest_cache'",
+        #         "--exclude-dir='run'",
+        #         "--exclude='./x.py'",
+        #         "--exclude-dir='sirepo.egg-info'",
+        #         f"{self.old_app_name}",
+        #     ],
+        #     stdout=subprocess.PIPE,
+        #     stderr=subprocess.PIPE,
+        # )
+        # print("len", len(p.stdout))
+        if len(output) > 0:
+            for line in output:
+                print(line)
+            raise AssertionError(f"REFERENCES TO {self.old_app_name} FOUND")
         print(f"No references to old_app_name={self.old_app_name} found")
 
     def rename(self):
