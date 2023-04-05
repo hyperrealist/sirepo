@@ -97,7 +97,7 @@ class _Renamer:
                 "--exclude-dir='run'",
                 "--exclude='./x.py'",
                 "--exclude-dir='sirepo.egg-info'",
-                f"--exclude-dir={self.exclude_files}"
+                f"--exclude-dir={self.exclude_files}",
                 f"{self.old_app_name}",
             ]
         ).decode('utf-8').split('\n')[:-1]
@@ -117,9 +117,13 @@ class _Renamer:
         #     stderr=subprocess.PIPE,
         # )
         # print("len", len(p.stdout))
-        if len(output) > 0:
-            for line in output:
-                print(line.split(":")[0])
+        r = []
+        for line in output:
+            if not re.search(self.exclude_files, line):
+                r.append(line)
+        if len(r) > 0:
+            for line in r:
+                print(line)
             raise AssertionError(f"{len(output)} REFERENCES TO {self.old_app_name} FOUND")
         print(f"No references to old_app_name={self.old_app_name} found")
 
