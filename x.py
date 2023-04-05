@@ -65,11 +65,12 @@ class _Renamer:
         for f in pkio.walk_tree("./"):
             if self._exlude(f):
                 continue
-
+            print("attempting replacement on", f.basename)
             with pkio.open_text(f) as t:
                 # TODO (gurhar1133): need to handle camel case etc
-                self._replace(f, t.read(), self.old_app_name, self.new_app_name)
-                self._replace(f, t.read(), self.old_app_name.title(), self.new_app_name.title())
+                t = t.read()
+                self._replace(f, t, self.old_app_name, self.new_app_name)
+                self._replace(f, t, self.old_app_name.title(), self.new_app_name.title())
 
 
     def _replace(self, file, text, reference, replacement):
