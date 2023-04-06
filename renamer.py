@@ -14,7 +14,7 @@ _EXCLUDE_FILES = re.compile(
     + r".*(_console\.py)|^venv/"
     + r"|^run/"
     + r"|__pycache__/ "
-    + r"|.git|.cache|node_modules|react/public|.png|.jpg|.woff|.eot|.ttf|.tif|.gif|.ico|.h5m|.sdds|.zip|.db|.csv|.h5|.bun|.stl|.log|.paramOpt"
+    + r"|.git|.cache|node_modules|react/public|.png|.jpg|.woff|.eot|.ttf|.tif|.gif|.ico|.h5m|/.sdds|.zip|.db|.csv|.h5|.bun|.stl|.log|.paramOpt"
 )
 
 _EXCLUDE_DIRS = re.compile(
@@ -32,7 +32,7 @@ class Renamer:
         self.old_app_name = old_app_name
         self.new_app_name = new_app_name
         self.exclude_files = _EXCLUDE_FILES
-        self.exclude_dirs = _EXCLUDE_DIRS
+        self.exclude_dirs = _EXCLUDE_FILES
         # self.include_files = _INCLUDE_FILES
 
     def _iterate(self, rename_function, dirs=False):
