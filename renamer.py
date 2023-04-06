@@ -63,6 +63,8 @@ class Renamer:
             if os.path.exists(d):
                 # TODO (gurhar1133): to fix the no such file or dir maybe check that
                 # full path has only one subdir ie <target>/basename?
+
+                # TODO (gurhar1133): test above idea with elegant_x/subdir and nothing else in subdir
                 print("renaming:", d, d.replace(self.old_app_name, self.new_app_name))
                 os.rename(d, d.replace(self.old_app_name, self.new_app_name))
 
