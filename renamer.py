@@ -37,7 +37,7 @@ class Renamer:
 
     def _iterate(self, rename_function, dirs=False):
         for f in pkio.walk_tree("./"):
-            if self._exlude(f, dirs):
+            if self._exclude(f, dirs):
                 continue
             rename_function(f)
 
@@ -65,7 +65,7 @@ class Renamer:
         self._replace_references()
         self._raise_for_references()
 
-    def _exlude(self, file, dirs):
+    def _exclude(self, file, dirs):
         return re.search(
             self.exclude_files if not dirs else self.exclude_dirs,
             pkio.py_path().bestrelpath(file)
@@ -73,7 +73,7 @@ class Renamer:
 
     def _replace_references(self):
         for f in pkio.walk_tree("./"):
-            if self._exlude(f):
+            if self._exclude(f, False):
                 continue
             with pkio.open_text(f) as t:
                 t = t.read()
