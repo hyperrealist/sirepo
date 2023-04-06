@@ -92,7 +92,7 @@ class _Renamer:
         if re.search(re.compile(reference), text):
             pkio.write_text(
                 file,
-                pattern.sub(self.new_app_name, text)
+                pattern.sub(replacement, text)
             )
 
 
