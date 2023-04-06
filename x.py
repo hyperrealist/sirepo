@@ -77,15 +77,15 @@ class _Renamer:
                     self.old_app_name,
                     self.new_app_name,
                 )
-                # self._replace(
-                #     f,
-                #     t,
-                #     re.compile(re.escape(self.old_app_name.title()),
-                #         # re.IGNORECASE
-                #     ),
-                #     self.old_app_name.title(),
-                #     self.new_app_name.title(),
-                # )
+                self._replace(
+                    f,
+                    t,
+                    re.compile(re.escape(self.old_app_name.title()),
+                        # re.IGNORECASE
+                    ),
+                    self.old_app_name.title(),
+                    self.new_app_name.title(),
+                )
 
 
     def _replace(self, file, text, pattern, reference, replacement):
