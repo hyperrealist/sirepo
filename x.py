@@ -68,15 +68,16 @@ class _Renamer:
             with pkio.open_text(f) as t:
                 # TODO (gurhar1133): need to handle camel case etc?
                 t = t.read()
-                self._replace(f, t, self.old_app_name, self.new_app_name)
+                pattern = re.compile(re.escape(self.old_app_name), re.IGNORECASE)
+                self._replace(f, t, pattern, self.old_app_name, self.new_app_name)
                 # self._replace(f, t, self.old_app_name.title(), self.new_app_name.title())
 
 
-    def _replace(self, file, text, reference, replacement):
+    def _replace(self, file, text, pattern, reference, replacement):
         if re.search(re.compile(reference), text):
             pkio.write_text(
                 file,
-                text.replace(reference, replacement)
+                pattern.sub(self.new_app_name, text)
             )
 
 
@@ -112,7 +113,7 @@ class _Renamer:
 def main():
     a = sys.argv
     _Renamer(a[1], a[2]).rename()
-    # file = "sirepo/template/elegant.py"
+    # file = "sirepo/template/newname.py"
     # text = pkio.read_text(file)
     # _Renamer(a[1], a[2])._replace(file, text, a[1], a[2])
 
