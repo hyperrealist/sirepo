@@ -35,7 +35,7 @@ _RENAMER_EXCLUDE_FILES = re.compile(
     + r".*(_console\.py)|^venv/"
     # + r"|^run/"
     + r"|__pycache__/ "
-    + r"|.git|.cache|node_modules|react/public|.png|.jpg|.woff|.eot|.ttf|.tif|.gif|.ico|.h5m|.sdds|.zip|.db|.csv|.h5|.bun|.stl|.log|.paramOpt"
+    + r"|.git|.cache|node_modules|react/public|.png|.jpg|.woff|.eot|.ttf|.tif|.gif|.ico|.h5m|.sdds|.zip|.db|.csv|.h5|.bun|.stl|.log|.paramOpt|.npy"
 )
 
 def audit_proprietary_lib_files(*uid):
