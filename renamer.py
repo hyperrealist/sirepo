@@ -36,8 +36,9 @@ class Renamer:
 
     def _iterate(self, rename_function):
         for f in pkio.walk_tree("./"):
-            if self._exlude(f) and "package_data" in f.dirname:
-                print("exluding ", f)
+            if self._exlude(f):
+                if "package_data" in f.dirname:
+                    print("exluding ", f)
                 continue
             rename_function(f)
 
