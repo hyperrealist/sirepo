@@ -296,7 +296,7 @@ class _Renamer:
                 "-i",
                 "-I",
                 "--exclude-dir='.pytest_cache'",
-                "--exclude-dir='run'",
+                # "--exclude-dir='run'",
                 "--exclude='./x.py'",
                 "--exclude-dir='sirepo.egg-info'",
                 f"{self.old_app_name}",
