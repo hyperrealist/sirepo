@@ -7,38 +7,28 @@ from pykern import pksetup
 from pykern import pkio
 from pykern.pkdebug import pkdp
 
-# _EXCLUDE_FILES = re.compile(
-#     # TODO (gurhar1133): different exclude for replacement?
-#     # TODO (gurhar1133): better way of doing this?
-#     f".*{pkunit.WORK_DIR_SUFFIX}/"
-#     + r".*(_console\.py)|^venv/"
-#     + r"|^run/"
-#     + r"|__pycache__/ "
-#     + r"|.git|.cache|node_modules|react/public|.png|.jpg|.woff|.eot|.ttf|.tif|.gif|.ico|.h5m|.sdds|.zip|.db|.csv|.h5|.bun|.stl|.log|.paramOpt"
-# )
-
-_RENAMER_EXCLUDE_FILES = re.compile(
+_EXCLUDE_FILES = re.compile(
     # TODO (gurhar1133): different exclude for replacement?
     # TODO (gurhar1133): better way of doing this?
     f".*{pkunit.WORK_DIR_SUFFIX}/"
     + r".*(_console\.py)|^venv/"
     + r"|^run/"
     + r"|__pycache__/ "
-    + r"|.git|.cache|node_modules|react/public|.png|.jpg|.woff|.eot|.ttf|.tif|.gif|.ico|.h5m|.sdds|.zip|.db|.csv|.h5|.bun|.stl|.log|.paramOpt|.npy|.dat"
+    + r"|.git|.cache|node_modules|react/public|.png|.jpg|.woff|.eot|.ttf|.tif|.gif|.ico|.h5m|.sdds|.zip|.db|.csv|.h5|.bun|.stl|.log|.paramOpt"
 )
 
+_INCLUDE_FILES = ""
 
 class Renamer:
     def __init__(self, old_app_name, new_app_name):
         self.old_app_name = old_app_name
         self.new_app_name = new_app_name
-        self.exclude_files = _RENAMER_EXCLUDE_FILES
+        self.exclude_files = _EXCLUDE_FILES
+        # self.include_files = _INCLUDE_FILES
 
     def _iterate(self, rename_function):
         for f in pkio.walk_tree("./"):
             if self._exlude(f):
-                if "package_data" in f.dirname:
-                    print("exluding ", f)
                 continue
             rename_function(f)
 
@@ -58,8 +48,6 @@ class Renamer:
 
     def _rename_dir(self, file_path):
         if self.old_app_name in file_path.dirname:
-            # print("renaming dir:", file_path.dirname)
-            # assert 0, f"renaming dir: {file_path.dirname}"
             d = str(file_path.dirname)
             if os.path.exists(d):
                 os.rename(d, d.replace(self.old_app_name, self.new_app_name))
@@ -76,7 +64,6 @@ class Renamer:
             if self._exlude(f):
                 continue
             with pkio.open_text(f) as t:
-                print(f"attempting to read: {f}")
                 t = t.read()
                 # TODO (gurhar1133): camelCase examples?
                 self._replace(f, t)
@@ -106,7 +93,7 @@ class Renamer:
                 "-i",
                 "-I",
                 "--exclude-dir='.pytest_cache'",
-                # "--exclude-dir='run'",
+                "--exclude-dir='run'",
                 "--exclude='./x.py'",
                 "--exclude-dir='sirepo.egg-info'",
                 f"{self.old_app_name}",
@@ -115,7 +102,6 @@ class Renamer:
         r = []
         # TODO (gurhar1133): way to avoid this step?
         for line in output:
-            # TODO (gurhar1133): maybe exlude all but run dir here?
             if not re.search(self.exclude_files, line):
                 r.append(line)
         if len(r) > 0:
@@ -127,6 +113,7 @@ class Renamer:
         print(f"renaming {self.old_app_name} to {self.new_app_name}")
         self._rename_paths()
         self._rename_references()
+
 
 def main():
     a = sys.argv
