@@ -129,7 +129,7 @@ class Renamer:
 
 def main():
     a = sys.argv
-    _Renamer(a[1], a[2]).rename()
+    Renamer(a[1], a[2]).rename()
 
 if __name__ == "__main__":
    main()
