@@ -68,38 +68,24 @@ class _Renamer:
             with pkio.open_text(f) as t:
                 # TODO (gurhar1133): need to handle camel case etc?
                 t = t.read()
-                if re.search(re.compile(self.old_app_name), t):
-                    pkio.write_text(
-                        f,
-                        # pattern.sub(replacement, text)
-                        t.replace(self.old_app_name, self.new_app_name).replace(self.old_app_name.title(), self.new_app_name.title())
-                    )
-                # self._replace(
-                #     f,
-                #     t,
-                #     re.compile(re.escape(self.old_app_name),
-                #         # re.IGNORECASE
-                #     ),
-                #     self.old_app_name,
-                #     self.new_app_name,
-                # )
-                # self._replace(
-                #     f,
-                #     t,
-                #     re.compile(re.escape(self.old_app_name.title()),
-                #         # re.IGNORECASE
-                #     ),
-                #     self.old_app_name.title(),
-                #     self.new_app_name.title(),
-                # )
+                self._replace(f, t)
 
 
-    def _replace(self, file, text, pattern, reference, replacement):
-        if re.search(re.compile(reference), text):
+
+    def _replace(self, file, text):
+        if re.search(re.compile(self.old_app_name), text):
             pkio.write_text(
                 file,
-                # pattern.sub(replacement, text)
-                text
+                text.replace(
+                    self.old_app_name,
+                    self.new_app_name,
+                ).replace(
+                    self.old_app_name.title(),
+                    self.new_app_name.title(),
+                ).replace(
+                    self.old_app_name.upper(),
+                    self.new_app_name.upper(),
+                )
             )
 
 
