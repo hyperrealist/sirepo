@@ -7,7 +7,7 @@
 from pykern import pkio, pkconfig
 from pykern.pkcollections import PKDict
 from pykern.pkdebug import pkdc, pkdexc, pkdlog, pkdp
-from pykern import pkuinit
+from pykern import pkunit
 from sirepo import feature_config
 from sirepo import sim_data
 from sirepo import simulation_db
