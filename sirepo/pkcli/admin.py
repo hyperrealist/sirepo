@@ -252,7 +252,7 @@ class _Renamer:
     def _rename_dir(self, file_path):
         if self.old_app_name in file_path.dirname:
             # print("renaming dir:", file_path.dirname)
-            assert 0, f"renaming dir: {file_path.dirname}"
+            # assert 0, f"renaming dir: {file_path.dirname}"
             d = str(file_path.dirname)
             if os.path.exists(d):
                 os.rename(d, d.replace(self.old_app_name, self.new_app_name))
