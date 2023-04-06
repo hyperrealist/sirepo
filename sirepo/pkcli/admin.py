@@ -305,8 +305,9 @@ class _Renamer:
         r = []
         # TODO (gurhar1133): way to avoid this step?
         for line in output:
-            if not re.search(self.exclude_files, line):
-                r.append(line)
+            # TODO (gurhar1133): may not want to exlcude
+            # if not re.search(self.exclude_files, line):
+            r.append(line)
         if len(r) > 0:
             m = "\n".join(r)
             raise AssertionError(f"{m}\n{len(r)} REFERENCES TO {self.old_app_name} FOUND")
