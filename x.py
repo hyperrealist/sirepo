@@ -69,7 +69,7 @@ class _Renamer:
                 # TODO (gurhar1133): need to handle camel case etc?
                 t = t.read()
                 self._replace(f, t, self.old_app_name, self.new_app_name)
-                self._replace(f, t, self.old_app_name.title(), self.new_app_name.title())
+                # self._replace(f, t, self.old_app_name.title(), self.new_app_name.title())
 
 
     def _replace(self, file, text, reference, replacement):
@@ -111,10 +111,10 @@ class _Renamer:
 
 def main():
     a = sys.argv
-    # _Renamer(a[1], a[2]).rename()
-    file = "sirepo/template/elegant.py"
-    text = pkio.read_text(file)
-    _Renamer(a[1], a[2])._replace(file, text, a[1], a[2])
+    _Renamer(a[1], a[2]).rename()
+    # file = "sirepo/template/elegant.py"
+    # text = pkio.read_text(file)
+    # _Renamer(a[1], a[2])._replace(file, text, a[1], a[2])
 
 if __name__ == "__main__":
    main()
