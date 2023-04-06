@@ -15,7 +15,7 @@ _EXCLUDE_FILES = re.compile(
     + r"|^run/"
     + r"|__pycache__/ "
     + r"|.git|.cache|node_modules|react/public|.png|.jpg|.woff|.eot|.ttf|.tif|.gif|.ico|.h5m|.zip|.db|.csv|.h5|.bun|.stl|.log|.paramOpt"
-    + r"|*/.sdds"
+    + r"|.*/.sdds"
 )
 
 _EXCLUDE_DIRS = re.compile(
