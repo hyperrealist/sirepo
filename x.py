@@ -9,6 +9,7 @@ from pykern.pkdebug import pkdp
 
 _EXCLUDE_FILES = re.compile(
     # TODO (gurhar1133): different exclude for replacement?
+    # TODO (gurhar1133): better way of doing this?
     f".*{pkunit.WORK_DIR_SUFFIX}/"
     + r".*(_console\.py)|^venv/"
     + r"|^run/"
@@ -55,25 +56,21 @@ class _Renamer:
         self._replace_references()
         self._raise_for_references()
 
-
     def _exlude(self, file):
         return re.search(self.exclude_files, pkio.py_path().bestrelpath(file))
-
 
     def _replace_references(self):
         for f in pkio.walk_tree("./"):
             if self._exlude(f):
                 continue
-            # print("attempting replacement on", f.dirname + "/" + f.basename)
             with pkio.open_text(f) as t:
-                # TODO (gurhar1133): need to handle camel case etc?
                 t = t.read()
+                # TODO (gurhar1133): camelCase examples?
                 self._replace(f, t)
-
-
 
     def _replace(self, file, text):
         if re.search(re.compile(self.old_app_name), text):
+            # TODO (gurhar1133): re.sub instead?
             pkio.write_text(
                 file,
                 text.replace(
@@ -87,7 +84,6 @@ class _Renamer:
                     self.new_app_name.upper(),
                 )
             )
-
 
     def _raise_for_references(self):
         output = subprocess.check_output(
@@ -104,6 +100,7 @@ class _Renamer:
             ]
         ).decode('utf-8').split('\n')[:-1]
         r = []
+        # TODO (gurhar1133): way to avoid this step?
         for line in output:
             if not re.search(self.exclude_files, line):
                 r.append(line)
@@ -121,9 +118,6 @@ class _Renamer:
 def main():
     a = sys.argv
     _Renamer(a[1], a[2]).rename()
-    # file = "sirepo/template/newname.py"
-    # text = pkio.read_text(file)
-    # _Renamer(a[1], a[2])._replace(file, text, a[1], a[2])
 
 if __name__ == "__main__":
    main()
