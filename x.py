@@ -68,7 +68,7 @@ class _Renamer:
             with pkio.open_text(f) as t:
                 # TODO (gurhar1133): need to handle camel case etc?
                 t = t.read()
-                if re.search(re.compile(reference), t):
+                if re.search(re.compile(self.old_app_name), t):
                     pkio.write_text(
                         f,
                         # pattern.sub(replacement, text)
