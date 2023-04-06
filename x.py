@@ -99,7 +99,7 @@ class _Renamer:
             pkio.write_text(
                 file,
                 # pattern.sub(replacement, text)
-                text.
+                text
             )
 
 
