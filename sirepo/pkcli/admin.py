@@ -230,10 +230,7 @@ class _Renamer:
 
     def _iterate(self, rename_function):
         for f in pkio.walk_tree("./"):
-            if "package_data" in f.dirname:
-                assert 0, f"hit for {f}"
             if self._exlude(f):
-                print("excluding:", f)
                 continue
             rename_function(f)
 
@@ -252,9 +249,9 @@ class _Renamer:
             )
 
     def _rename_dir(self, file_path):
-        print("checking dir", file_path.dirname)
         if self.old_app_name in file_path.dirname:
-            print("hit")
+            # print("renaming dir:", file_path.dirname)
+            assert 0, f"renaming dir: {file_path.dirname}"
             d = str(file_path.dirname)
             if os.path.exists(d):
                 os.rename(d, d.replace(self.old_app_name, self.new_app_name))
