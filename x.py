@@ -68,31 +68,38 @@ class _Renamer:
             with pkio.open_text(f) as t:
                 # TODO (gurhar1133): need to handle camel case etc?
                 t = t.read()
-                self._replace(
-                    f,
-                    t,
-                    re.compile(re.escape(self.old_app_name),
-                        # re.IGNORECASE
-                    ),
-                    self.old_app_name,
-                    self.new_app_name,
-                )
-                self._replace(
-                    f,
-                    t,
-                    re.compile(re.escape(self.old_app_name.title()),
-                        # re.IGNORECASE
-                    ),
-                    self.old_app_name.title(),
-                    self.new_app_name.title(),
-                )
+                if re.search(re.compile(reference), t):
+                    pkio.write_text(
+                        f,
+                        # pattern.sub(replacement, text)
+                        t.replace(self.old_app_name, self.new_app_name).replace(self.old_app_name.title(), self.new_app_name.title())
+                    )
+                # self._replace(
+                #     f,
+                #     t,
+                #     re.compile(re.escape(self.old_app_name),
+                #         # re.IGNORECASE
+                #     ),
+                #     self.old_app_name,
+                #     self.new_app_name,
+                # )
+                # self._replace(
+                #     f,
+                #     t,
+                #     re.compile(re.escape(self.old_app_name.title()),
+                #         # re.IGNORECASE
+                #     ),
+                #     self.old_app_name.title(),
+                #     self.new_app_name.title(),
+                # )
 
 
     def _replace(self, file, text, pattern, reference, replacement):
         if re.search(re.compile(reference), text):
             pkio.write_text(
                 file,
-                pattern.sub(replacement, text)
+                # pattern.sub(replacement, text)
+                text.
             )
 
 
