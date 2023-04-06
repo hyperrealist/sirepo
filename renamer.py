@@ -82,7 +82,7 @@ class Renamer:
     def _exclude(self, file, dirs):
         return re.search(
             self.exclude_files if not dirs else self.exclude_dirs,
-            pkio.py_path().bestrelpath(file) if not dirs else file.dirname
+            pkio.py_path().bestrelpath(file)
         )
 
     def _replace_references(self):
