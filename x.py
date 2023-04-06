@@ -99,7 +99,8 @@ class _Renamer:
             if not re.search(self.exclude_files, line):
                 r.append(line)
         if len(r) > 0:
-            raise AssertionError(f"{"\n".join(r)}\n{len(r)} REFERENCES TO {self.old_app_name} FOUND")
+            m = "\n".join(r)
+            raise AssertionError(f"{m}\n{len(r)} REFERENCES TO {self.old_app_name} FOUND")
         print(f"No references to old_app_name={self.old_app_name} found")
 
     def rename(self):
