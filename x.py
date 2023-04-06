@@ -114,7 +114,7 @@ def main():
     # _Renamer(a[1], a[2]).rename()
     file = "sirepo/template/elegant.py"
     text = pkio.read_text(file)
-    _Renamer(a[1], a[2]).replace(file, text, a[1], a[2])
+    _Renamer(a[1], a[2])._replace(file, text, a[1], a[2])
 
 if __name__ == "__main__":
    main()
