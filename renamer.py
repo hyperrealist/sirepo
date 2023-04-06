@@ -14,7 +14,7 @@ _EXCLUDE_FILES = re.compile(
     + r".*(_console\.py)|^venv/"
     + r"|^run/"
     + r"|__pycache__/ "
-    + r"|.git|.cache|node_modules|react/public|.png|.jpg|.woff|.eot|.ttf|.tif|.gif|.ico|.h5m|.sdds|.zip|.db|.csv|.h5|.bun|.stl|.log|.paramOpt"
+    + r"|.git|.cache|node_modules|react/public|.png|.jpg|.woff|.eot|.ttf|.tif|.gif|.ico|.h5m|/.sdds|.zip|.db|.csv|.h5|.bun|.stl|.log|.paramOpt"
 )
 
 _EXCLUDE_DIRS = re.compile(
@@ -64,7 +64,7 @@ class Renamer:
                 # TODO (gurhar1133): to fix the no such file or dir maybe check that
                 # full path has only one subdir ie <target>/basename?
 
-                # TODO (gurhar1133): test above idea with elegant_x/subdir and nothing else in subdir
+                # TODO (gurhar1133): test above idea with bettername_x/subdir and nothing else in subdir
                 print("renaming:", d, d.replace(self.old_app_name, self.new_app_name))
                 os.rename(d, d.replace(self.old_app_name, self.new_app_name))
 
