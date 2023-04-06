@@ -14,7 +14,15 @@ _EXCLUDE_FILES = re.compile(
     + r".*(_console\.py)|^venv/"
     + r"|^run/"
     + r"|__pycache__/ "
-    + r"|.git|.cache|node_modules|react/public|\.png|\.jpg|\.woff|\.eot|\.ttf|\.tif|\.gif|\.ico|\.h5m|\.sdds|\.zip|\.db|\.csv|\.h5|\.bun|\.stl|\.log|\.paramOpt"
+    + r"|.git|.cache|node_modules|react/public|.png|.jpg|.woff|.eot|.ttf|.tif|.gif|.ico|.h5m|.sdds|.zip|.db|.csv|.h5|.bun|.stl|.log|.paramOpt"
+)
+
+_EXCLUDE_DIRS = re.compile(
+    r"|node_modules|react/public|"
+    + f".*{pkunit.WORK_DIR_SUFFIX}/"
+    + r".*(_console\.py)|^venv/"
+    + r"|^run/"
+    + r"|__pycache__/ "
 )
 
 _INCLUDE_FILES = ""
@@ -24,18 +32,19 @@ class Renamer:
         self.old_app_name = old_app_name
         self.new_app_name = new_app_name
         self.exclude_files = _EXCLUDE_FILES
+        self.exclude_dirs = _EXCLUDE_DIRS
         # self.include_files = _INCLUDE_FILES
 
-    def _iterate(self, rename_function):
+    def _iterate(self, rename_function, dirs=False):
         for f in pkio.walk_tree("./"):
-            if self._exlude(f):
+            if self._exlude(f, dirs):
                 continue
             rename_function(f)
 
     def _rename_paths(self):
         # rename base and dirnames
         self._iterate(self._rename_file)
-        self._iterate(self._rename_dir)
+        self._iterate(self._rename_dir, dirs=True)
 
     def _rename_file(self, file_path):
         if self.old_app_name in file_path.basename:
@@ -56,8 +65,11 @@ class Renamer:
         self._replace_references()
         self._raise_for_references()
 
-    def _exlude(self, file):
-        return re.search(self.exclude_files, pkio.py_path().bestrelpath(file))
+    def _exlude(self, file, dirs):
+        return re.search(
+            self.exclude_files if not dirs else self.exclude_dirs,
+            pkio.py_path().bestrelpath(file)
+        )
 
     def _replace_references(self):
         for f in pkio.walk_tree("./"):
@@ -93,6 +105,7 @@ class Renamer:
                 "-i",
                 "-I",
                 "--exclude-dir='.pytest_cache'",
+                # "--exclude-dir='run'",
                 "--exclude='./x.py'",
                 "--exclude-dir='sirepo.egg-info'",
                 f"{self.old_app_name}",
