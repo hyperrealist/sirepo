@@ -71,7 +71,7 @@ class Renamer:
     def _dir_check(self, dir):
         l = dir.split("/")
         print("l=", l)
-        return self.old_app_name in l[-2]
+        return self.old_app_name in l[-1]
 
 
     def _rename_references(self):
