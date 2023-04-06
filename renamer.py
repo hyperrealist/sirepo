@@ -61,6 +61,7 @@ class Renamer:
         if self.old_app_name in file_path.dirname:
             d = str(file_path.dirname)
             if os.path.exists(d):
+                print("renaming:", d, d.replace(self.old_app_name, self.new_app_name))
                 os.rename(d, d.replace(self.old_app_name, self.new_app_name))
 
     def _rename_references(self):
