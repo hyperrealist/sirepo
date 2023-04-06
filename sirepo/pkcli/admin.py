@@ -267,6 +267,7 @@ class _Renamer:
             if self._exlude(f):
                 continue
             with pkio.open_text(f) as t:
+                print(f"attempting to read: {f}")
                 t = t.read()
                 # TODO (gurhar1133): camelCase examples?
                 self._replace(f, t)
