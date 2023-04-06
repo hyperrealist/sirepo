@@ -230,7 +230,10 @@ class _Renamer:
 
     def _iterate(self, rename_function):
         for f in pkio.walk_tree("./"):
+            if "package_data" in f.dirname:
+                assert 0, f"hit for {f}"
             if self._exlude(f):
+                print("excluding:", f)
                 continue
             rename_function(f)
 
