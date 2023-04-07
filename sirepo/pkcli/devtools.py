@@ -10,7 +10,7 @@ from pykern.pkdebug import pkdp
 _RENAMER_EXCLUDE_FILES = re.compile(
     # TODO (gurhar1133): different exclude for replacement?
     # TODO (gurhar1133): better way of doing this?
-    f".*{pkunit.WORK_DIR_SUFFIX}/"
+    f"^.*{pkunit.WORK_DIR_SUFFIX}/"
     + r".*(_console\.py)|^venv/"
     + r"|^run/"
     + r"|__pycache__/ "
@@ -59,9 +59,9 @@ class _Renamer:
 
     def _dir_check(self, dir):
         # TODO (gurhar1133): better way of doing this?
-        l = dir.split("/")
-        return self.old_app_name in l[-1]
-
+        # l = dir.split("/")
+        # return self.old_app_name in l[-1]
+        return True
 
     def _rename_references(self):
         self._replace_references()
