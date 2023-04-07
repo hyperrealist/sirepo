@@ -14,6 +14,7 @@ _EXCLUDE_FILES = re.compile(
     + r".*(_console\.py)|^venv/"
     + r"|^run/"
     + r"|__pycache__/ "
+    # TODO (gurhar1133): ignore js/ext
     + r"|^.*\.(git|cache)|node_modules|react/public"
     + r"|^.*\.(sdds|bun|png|jpg|woff|eot|ttf|tif|gif|ico|h5m|zip|log|db|csv|h5|stl|dat|log|npy|pyc|paramOpt|gz|woff2)$"
 )
