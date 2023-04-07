@@ -11,7 +11,7 @@ _RENAMER_EXCLUDE_FILES = re.compile(
     # TODO (gurhar1133): different exclude for replacement?
     # TODO (gurhar1133): better way of doing this?
     f".*{pkunit.WORK_DIR_SUFFIX}/"
-    + r".*(_console\.py)|^venv/"
+    + r"|.*(_console\.py)|^venv/"
     + r"|^run/"
     + r"|__pycache__/ "
     # TODO (gurhar1133): ignore js/ext
