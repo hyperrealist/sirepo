@@ -8,14 +8,11 @@ from pykern import pkio
 from pykern.pkdebug import pkdp
 
 _RENAMER_EXCLUDE_FILES = re.compile(
-    # TODO (gurhar1133): different exclude for replacement?
-    # TODO (gurhar1133): better way of doing this?
     f".*{pkunit.WORK_DIR_SUFFIX}/"
     + r"|.*(_console\.py)|^venv/"
     + r"|^run/"
     + r"|__pycache__/ "
-    # TODO (gurhar1133): ignore js/ext
-    +r"|\/js\/ext"
+    + r"|\/js\/ext"
     + r"|^.*\.(git|cache)|node_modules|react/public"
     + r"|^.*\.(sdds|bun|png|jpg|woff|eot|ttf|tif|gif|ico|h5m|zip|log|db|csv|h5|stl|dat|log|npy|pyc|paramOpt|gz|woff2)$"
 )
@@ -48,32 +45,28 @@ class _Renamer:
             b = str(file_path.basename)
             os.rename(
                 str(file_path),
-                d + "/" + b.replace(self.old_app_name, self.new_app_name)
+                d + "/" + b.replace(self.old_app_name, self.new_app_name),
             )
 
     def _rename_dir(self, file_path):
         if self.old_app_name in file_path.dirname:
-            d = str(file_path.dirname)
-            self._dir(d)
+            self._dir(str(file_path.dirname))
 
     def _dir(self, dir):
         if os.path.exists(dir):
-            target = ""
+            t = ""
             for piece in dir.split("/"):
-                target += f"/{piece}"
+                t += f"/{piece}"
                 if self.old_app_name in piece:
                     break
-            os.rename(target, target.replace(self.old_app_name, self.new_app_name))
+            os.rename(t, t.replace(self.old_app_name, self.new_app_name))
 
     def _rename_references(self):
         self._replace_references()
         self._raise_for_references()
 
     def _exclude(self, file, dirs):
-        return re.search(
-            self.exclude_files,
-            pkio.py_path().bestrelpath(file)
-        )
+        return re.search(self.exclude_files, pkio.py_path().bestrelpath(file))
 
     def _replace_references(self):
         for f in pkio.walk_tree("./"):
@@ -91,37 +84,43 @@ class _Renamer:
                 text.replace(
                     self.old_app_name,
                     self.new_app_name,
-                ).replace(
+                )
+                .replace(
                     self.old_app_name.title(),
                     self.new_app_name.title(),
-                ).replace(
+                )
+                .replace(
                     self.old_app_name.upper(),
                     self.new_app_name.upper(),
-                )
+                ),
             )
 
     def _raise_for_references(self):
-        output = subprocess.check_output(
-            [
-                "grep",
-                "-r",
-                "-i",
-                "-I",
-                "--exclude-dir='.pytest_cache'",
-                # "--exclude-dir='run'",
-                "--exclude='./x.py'",
-                "--exclude-dir='sirepo.egg-info'",
-                f"{self.old_app_name}",
-            ]
-        ).decode('utf-8').split('\n')[:-1]
+        o = (
+            subprocess.check_output(
+                [
+                    "grep",
+                    "-r",
+                    "-i",
+                    "-I",
+                    "--exclude-dir='.pytest_cache'",
+                    "--exclude='./x.py'",
+                    "--exclude-dir='sirepo.egg-info'",
+                    f"{self.old_app_name}",
+                ]
+            )
+            .decode("utf-8")
+            .split("\n")[:-1]
+        )
         r = []
-        # TODO (gurhar1133): way to avoid this step?
-        for line in output:
+        for line in o:
             if not re.search(self.exclude_files, line.split(":")[0]):
                 r.append(line)
         if len(r) > 0:
             m = "\n".join(r)
-            raise AssertionError(f"{m}\n{len(r)} REFERENCES TO {self.old_app_name} FOUND")
+            raise AssertionError(
+                f"{m}\n{len(r)} REFERENCES TO {self.old_app_name} FOUND"
+            )
         print(f"No references to old_app_name={self.old_app_name} found")
 
     def rename(self):
