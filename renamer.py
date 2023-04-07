@@ -129,7 +129,7 @@ class Renamer:
         r = []
         # TODO (gurhar1133): way to avoid this step?
         for line in output:
-            if not re.search(self.exclude_files, line):
+            if not re.search(self.exclude_files, line.split(":")[0]):
                 r.append(line)
         if len(r) > 0:
             m = "\n".join(r)
