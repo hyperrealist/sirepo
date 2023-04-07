@@ -15,7 +15,7 @@ _EXCLUDE_FILES = re.compile(
     + r"|^run/"
     + r"|__pycache__/ "
     # TODO (gurhar1133): ignore js/ext
-    +r"\/js\/ext"
+    +r"|\/js\/ext"
     + r"|^.*\.(git|cache)|node_modules|react/public"
     + r"|^.*\.(sdds|bun|png|jpg|woff|eot|ttf|tif|gif|ico|h5m|zip|log|db|csv|h5|stl|dat|log|npy|pyc|paramOpt|gz|woff2)$"
 )
@@ -110,6 +110,8 @@ class Renamer:
         # TODO (gurhar1133): way to avoid this step?
         for line in output:
             if not re.search(self.exclude_files, line.split(":")[0]):
+                if "js/ext" in line:
+                    print("FOUND JS/EXT after regex check for it")
                 r.append(line)
         if len(r) > 0:
             m = "\n".join(r)
