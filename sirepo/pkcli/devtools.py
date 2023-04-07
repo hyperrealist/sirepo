@@ -54,14 +54,16 @@ class _Renamer:
     def _rename_dir(self, file_path):
         if self.old_app_name in file_path.dirname:
             d = str(file_path.dirname)
-            if os.path.exists(d) and self._dir_check(d):
-                os.rename(d, d.replace(self.old_app_name, self.new_app_name))
+            self._dir(d)
 
-    def _dir_check(self, dir):
-        # TODO (gurhar1133): better way of doing this?
-        # l = dir.split("/")
-        # return self.old_app_name in l[-1]
-        return True
+    def _dir(self, dir):
+        if os.path.exists(d):
+            target = ""
+            for piece in dir.split("/"):
+                target += f"/{piece}"
+                if self.old_app_name in piece:
+                    break
+            os.rename(target, target.replace(self.old_app_name, self.new_app_name))
 
     def _rename_references(self):
         self._replace_references()
