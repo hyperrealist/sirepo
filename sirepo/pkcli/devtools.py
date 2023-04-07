@@ -58,6 +58,7 @@ class _Renamer:
                 os.rename(d, d.replace(self.old_app_name, self.new_app_name))
 
     def _dir_check(self, dir):
+        # TODO (gurhar1133): better way of doing this?
         l = dir.split("/")
         return self.old_app_name in l[-1]
 
