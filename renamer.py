@@ -15,33 +15,20 @@ _EXCLUDE_FILES = re.compile(
     + r"|^run/"
     + r"|__pycache__/ "
     # TODO (gurhar1133): ignore js/ext
+    +r".*js\/ext"
     + r"|^.*\.(git|cache)|node_modules|react/public"
     + r"|^.*\.(sdds|bun|png|jpg|woff|eot|ttf|tif|gif|ico|h5m|zip|log|db|csv|h5|stl|dat|log|npy|pyc|paramOpt|gz|woff2)$"
 )
-
-_EXCLUDE_DIRS = re.compile(
-    r"|node_modules|react/public|"
-    + f".*{pkunit.WORK_DIR_SUFFIX}/"
-    + r".*(_console\.py)|^venv/"
-    + r"|^run/"
-    + r"|__pycache__/ "
-)
-
-_INCLUDE_FILES = ""
 
 class Renamer:
     def __init__(self, old_app_name, new_app_name):
         self.old_app_name = old_app_name
         self.new_app_name = new_app_name
         self.exclude_files = _EXCLUDE_FILES
-        self.exclude_dirs = _EXCLUDE_FILES
-        # self.include_files = _INCLUDE_FILES
 
     def _iterate(self, rename_function, dirs=False):
         for f in pkio.walk_tree("./"):
             if self._exclude(f, dirs):
-                # if "package_data" in f.dirname and dirs:
-                #     print("excluding", f, f"when re={self.exclude_dirs}")
                 continue
             rename_function(f)
 
@@ -63,16 +50,10 @@ class Renamer:
         if self.old_app_name in file_path.dirname:
             d = str(file_path.dirname)
             if os.path.exists(d) and self._dir_check(d):
-                # TODO (gurhar1133): to fix the no such file or dir maybe check that
-                # full path has only one subdir ie <target>/basename?
-
-                # TODO (gurhar1133): test above idea with bettername_x/subdir and nothing else in subdir
-                print("renaming:", d, d.replace(self.old_app_name, self.new_app_name))
                 os.rename(d, d.replace(self.old_app_name, self.new_app_name))
 
     def _dir_check(self, dir):
         l = dir.split("/")
-        print("l=", l)
         return self.old_app_name in l[-1]
 
 
@@ -82,7 +63,7 @@ class Renamer:
 
     def _exclude(self, file, dirs):
         return re.search(
-            self.exclude_files if not dirs else self.exclude_dirs,
+            self.exclude_files,
             pkio.py_path().bestrelpath(file)
         )
 
@@ -91,9 +72,7 @@ class Renamer:
             if self._exclude(f, False):
                 continue
             with pkio.open_text(f) as t:
-                print(f"attempting read of {f}")
                 t = t.read()
-                # TODO (gurhar1133): camelCase examples?
                 self._replace(f, t)
 
     def _replace(self, file, text):
