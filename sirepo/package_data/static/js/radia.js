@@ -2144,8 +2144,12 @@ SIREPO.app.directive('radiaViewer', function(appState, errorService, frameCache,
                     const gName = `${name}.${i}`;
                     let sceneDatum = data[i];
                     let radiaId = sceneDatum.id;
-                    let objId = ((sceneData.idMap || {})[radiaId]).id || radiaId;
-
+                    let objId = ((sceneData.idMap || {})[radiaId]) || radiaId;
+                    let gObj = radiaService.getObject(objId) || {};
+                    srdbg('gObj', gObj, 'rid', radiaId);
+                    //if (gObj.members) {
+                    //    continue;
+                    //}
                     // trying a separation into an actor for each data type, to better facilitate selection
                     for (const t of radiaVtkUtils.GEOM_TYPES) {
                         const d = sceneDatum[t];
@@ -2153,7 +2157,6 @@ SIREPO.app.directive('radiaViewer', function(appState, errorService, frameCache,
                             continue;
                         }
                         const isPoly = t === SIREPO.APP_SCHEMA.constants.geomTypePolys;
-                        let gObj = radiaService.getObject(objId) || {};
                         let gColor = gObj.color ? vtk.Common.Core.vtkMath.hex2float(gObj.color) : null;
                         // use colors from Radia for groups
                         if (gObj.members) {

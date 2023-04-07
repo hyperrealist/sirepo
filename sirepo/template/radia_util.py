@@ -393,11 +393,14 @@ def free_symmetries(g_id):
     return radia.ObjDpl(g_id, "FreeSym->True")
 
 
-def id_map_to_data(id_map):
-    data = []
-    for k, v in id_map.items():
-        data.append(geom_to_data(k, name=v.name))
-    return data
+def id_map_to_data(base_id, id_map, name):
+    pd = PKDict(name=name, data=[])
+    for k in list(id_map.keys()):
+        pd.data.extend(
+            geom_to_data(k, divide=False).data
+        )
+    pd.bounds = radia.ObjGeoLim(base_id)
+    return pd
 
 
 def geom_to_data(g_id, name=None, divide=True):
@@ -415,8 +418,7 @@ def geom_to_data(g_id, name=None, divide=True):
     d.update(_geom_bounds(g_id))
     n_verts = len(d.polygons.vertices)
     c = radia.ObjCntStuf(g_id)
-    l = len(c)
-    if not divide or l == 0:
+    if not divide or len(c) == 0:
         d.id = g_id
         pd.data = [d]
     else:
