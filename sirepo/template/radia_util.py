@@ -393,6 +393,13 @@ def free_symmetries(g_id):
     return radia.ObjDpl(g_id, "FreeSym->True")
 
 
+def id_map_to_data(id_map):
+    data = []
+    for k, v in id_map.items():
+        data.append(geom_to_data(k, name=v.name))
+    return data
+
+
 def geom_to_data(g_id, name=None, divide=True):
     def _to_pkdict(d):
         if not isinstance(d, dict):

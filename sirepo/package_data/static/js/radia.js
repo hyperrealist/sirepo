@@ -2144,7 +2144,7 @@ SIREPO.app.directive('radiaViewer', function(appState, errorService, frameCache,
                     const gName = `${name}.${i}`;
                     let sceneDatum = data[i];
                     let radiaId = sceneDatum.id;
-                    let objId = (sceneData.idMap || {})[radiaId] || radiaId;
+                    let objId = ((sceneData.idMap || {})[radiaId]).id || radiaId;
 
                     // trying a separation into an actor for each data type, to better facilitate selection
                     for (const t of radiaVtkUtils.GEOM_TYPES) {
@@ -2670,6 +2670,7 @@ SIREPO.app.directive('radiaViewer', function(appState, errorService, frameCache,
             }
 
             function setupSceneData(data) {
+                srdbg('setupSceneData', data);
                 displayVals = getDisplayVals();
                 $rootScope.$broadcast('radiaViewer.loaded');
                 $rootScope.$broadcast('vtk.hideLoader');
