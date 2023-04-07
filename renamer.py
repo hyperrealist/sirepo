@@ -110,8 +110,6 @@ class Renamer:
         # TODO (gurhar1133): way to avoid this step?
         for line in output:
             if not re.search(self.exclude_files, line.split(":")[0]):
-                if "js/ext" in line:
-                    print("FOUND JS/EXT after regex check for it")
                 r.append(line)
         if len(r) > 0:
             m = "\n".join(r)
