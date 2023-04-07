@@ -57,7 +57,7 @@ class _Renamer:
             self._dir(d)
 
     def _dir(self, dir):
-        if os.path.exists(d):
+        if os.path.exists(dir):
             target = ""
             for piece in dir.split("/"):
                 target += f"/{piece}"
