@@ -96,6 +96,8 @@ def _best_worst_images(y_true, predictions):
     for i in range(len(y)):
         losses.append((i, float(loss_fn(y[i], predictions[i]))))
     losses.sort(key = lambda x: x[1])
+    for l in losses:
+        print("best", losses[:3], "worst", losses[-3:])
     return PKDict(best=[x[0] for x in losses[:3]], worst=[x[0] for x in losses[-3:]])
 
 
