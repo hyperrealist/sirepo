@@ -3073,17 +3073,17 @@ SIREPO.viewLogic('objectShapeView', function(appState, panelState, radiaService,
     $scope.watchFields = [
         [
             'geomObject.type',
-            "extrudedPoly.extrusionAxisSegments", "extrudedPoly.triangulationLevel",
+        ], updateType,
+        [
+            'extrudedPoly.extrusionAxisSegments', 'extrudedPoly.triangulationLevel',
             'stemmed.armHeight', 'stemmed.armPosition', 'stemmed.stemWidth', 'stemmed.stemPosition',
             'jay.hookHeight', 'jay.hookWidth',
         ], updateShapeEditor,
     ];
 
     $scope.whenSelected = () => {
-        modelType = appState.models.geomObject.type;
         $scope.modelData = appState.models[$scope.modelName];
-        editedModels = radiaService.updateModelAndSuperClasses(modelType, $scope.modelData);
-        updateShapeEditor();
+        updateType();
     };
 
     $scope.$on('extrudedPoly.changed', loadPoints);
@@ -3168,8 +3168,15 @@ SIREPO.viewLogic('objectShapeView', function(appState, panelState, radiaService,
             );
         });
         // show the type but disable it
-        panelState.enableField('geomObject', 'type', false);
+        //panelState.enableField('geomObject', 'type', false);
         panelState.showField('extrudedPoints', 'referencePoints', ($scope.modelData.referencePoints || []).length > 0);
+    }
+
+    function updateType() {
+        modelType = appState.models.geomObject.type;
+        appState.setModelDefaults($scope.modelData, modelType);
+        editedModels = radiaService.updateModelAndSuperClasses(modelType, $scope.modelData);
+        updateShapeEditor();
     }
 
     buildTriangulationLevelDelegate();

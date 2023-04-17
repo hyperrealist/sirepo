@@ -1590,13 +1590,9 @@ def _update_undulatorHybrid(model, assembly, qcall=None, **kwargs):
     )
 
     for f in (
-        "bevels",
-        "color",
-        "material",
-        "materialFile",
-        "remanentMag",
-        "type",
-        "segments",
+        f for f in assembly.pole if f not in (
+            "groupId", "id", "name",
+        )
     ):
         assembly.halfPole[f] = copy.deepcopy(assembly.pole[f])
     _update_geom_obj(
