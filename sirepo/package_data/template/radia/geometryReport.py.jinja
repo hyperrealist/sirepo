@@ -62,7 +62,6 @@ def _add_object(o, radia_objs, id_map):
             size=o.size,
         )
     if _MODEL_EXTRUDED_POLY in sc:
-        print("EXTR {}", o)
         g_id = radia_util.extrude(
             area=o.area,
             center=o.center,
@@ -76,7 +75,6 @@ def _add_object(o, radia_objs, id_map):
             t_level=o.triangulationLevel,
             h_m_curve=o.h_m_curve
         )
-        print("GID {}", g_id)
     if t == _MODEL_RACETRACK:
         g_id = radia_util.build_racetrack(
             center=o.center,
