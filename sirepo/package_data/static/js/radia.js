@@ -1593,6 +1593,9 @@ SIREPO.app.directive('fieldIntegralTable', function(appState, panelState, plotti
             $scope.linePaths =  () => (($scope.model || {}).paths || []).filter($scope.isLine);
 
             function updateTable() {
+                if (! $scope.hasPaths()) {
+                    return;
+                }
                 appState.models.fieldIntegralReport.lastCalculated = Date.now();
                 appState.saveQuietly('fieldIntegralReport');
                 panelState.clear('fieldIntegralReport');
@@ -3167,8 +3170,6 @@ SIREPO.viewLogic('objectShapeView', function(appState, panelState, radiaService,
                 hasField || appState.isSubclass(modelType, m[0])
             );
         });
-        // show the type but disable it
-        //panelState.enableField('geomObject', 'type', false);
         panelState.showField('extrudedPoints', 'referencePoints', ($scope.modelData.referencePoints || []).length > 0);
     }
 
@@ -3178,6 +3179,25 @@ SIREPO.viewLogic('objectShapeView', function(appState, panelState, radiaService,
         editedModels = radiaService.updateModelAndSuperClasses(modelType, $scope.modelData);
         updateShapeEditor();
     }
+
+    $scope.$on('modelChanged', (e, modelName) => {
+        if (! editedModels.includes(modelName)) {
+            return;
+        }
+        if (modelName === 'extrudedPoly') {
+            if (editedModels.includes('extrudedPoints')) {
+                loadPoints();
+            }
+            else {
+                radiaService.updateExtruded($scope.modelData, () => {
+                    radiaService.saveGeometry(true, false);
+                });
+            }
+        }
+        if (modelName === 'stl') {
+            loadSTLSize();
+        }
+    });
 
     buildTriangulationLevelDelegate();
 });
