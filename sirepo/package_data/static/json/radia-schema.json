@@ -1652,7 +1652,6 @@
             "advanced": [],
             "basic": [
                 ["Undulator Parameters", [
-                    "gap",
                     "numPeriods",
                     "periodLength"
                 ]],
@@ -1660,6 +1659,7 @@
                     "undulatorHybrid.pole.shapeButton",
                     "poleCrossSection",
                     "poleLength",
+                    "gap",
                     "undulatorHybrid.pole.segments",
                     "undulatorHybrid.pole.material",
                     "undulatorHybrid.pole.materialFile",

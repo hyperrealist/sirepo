@@ -3444,6 +3444,7 @@ for(const m of ['Dipole', 'Undulator']) {
             $scope.watchFields = [
                 [
                     `${$scope.modelName}.coil.height`,
+                    'geomObject.type',
                 ],
                 updateEditor
             ];
@@ -3508,6 +3509,12 @@ for(const m of ['Dipole', 'Undulator']) {
                     watchCoil();
                     panelState.enableField('racetrack', 'size', false);
                 }
+
+                panelState.showField(
+                    'geomObject',
+                    'segments',
+                    ! appState.isSubclass(o.type, 'extrudedObject')
+                );
             };
 
             function activeModelId() {
@@ -3530,6 +3537,11 @@ for(const m of ['Dipole', 'Undulator']) {
                 if (o.type === 'racetrack') {
                     radiaService.updateRaceTrack(o);
                 }
+                panelState.showField(
+                    'geomObject',
+                    'segments',
+                    ! appState.isSubclass(o.type, 'extrudedObject')
+                );
             }
 
             function watchCoil() {
