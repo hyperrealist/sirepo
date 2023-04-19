@@ -33,19 +33,15 @@ def _add_object(o, radia_objs, id_map):
     model = o.get('model')
     t = o.get('type')
     sc = o.get('super_classes', [])
-    mat = {{ matrix }}
-    if _MODEL_OBJECT in sc:
-        m = radia_util.multiply_vector_by_matrix(o.magnetization, mat)
-        segs = radia_util.multiply_vector_by_matrix(o.segments, mat)
     #TODO(mvk): dispatch object building
     if t == _MODEL_CUBOID:
         g_id = radia_util.build_cuboid(
             center=o.center,
             size=o.size,
             material=o.material,
-            magnetization=m,
+            magnetization=o.magnetization,
             rem_mag=o.remanentMag,
-            segments=segs,
+            segments=o.segments,
             h_m_curve=o.h_m_curve
         )
     if t == _MODEL_CYLINDER:
@@ -54,11 +50,11 @@ def _add_object(o, radia_objs, id_map):
             extrusion_axis=o.extrusionAxis,
             h_m_curve=o.h_m_curve,
             material=o.material,
-            magnetization=m,
+            magnetization=o.magnetization,
             num_sides=o.numSides,
             radius=o.radius,
             rem_mag=o.remanentMag,
-            segments=segs,
+            segments=o.segments,
             size=o.size,
         )
     if _MODEL_EXTRUDED_POLY in sc:
@@ -69,9 +65,9 @@ def _add_object(o, radia_objs, id_map):
             extrusion_axis=o.extrusionAxis,
             points=o.points,
             material=o.material,
-            magnetization=m,
+            magnetization=o.magnetization,
             rem_mag=o.remanentMag,
-            segments=segs,
+            segments=o.segments,
             t_level=o.triangulationLevel,
             h_m_curve=o.h_m_curve
         )
@@ -94,10 +90,10 @@ def _add_object(o, radia_objs, id_map):
             size=o.size,
             vertices=o.stlVertices,
             faces=o.stlFaces,
-            magnetization=m,
+            magnetization=o.magnetization,
             material=o.material,
             rem_mag=o.remanentMag,
-            segments=segs,
+            segments=o.segments,
             h_m_curve=o.h_m_curve,
             #TODO: Not implemented
             #slices=o.stlSlices
@@ -109,9 +105,9 @@ def _add_object(o, radia_objs, id_map):
                 center=o.center,
                 size=o.size,
                 material=o.material,
-                magnetization=m,
+                magnetization=o.magnetization,
                 rem_mag=o.remanentMag,
-                segments=segs,
+                segments=o.segments,
                 h_m_curve=o.h_m_curve,
                 **b
             )
