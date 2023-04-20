@@ -228,7 +228,7 @@ class _DataFileReq(tornado.web.RequestHandler):
         (d, f) = path.split("/")
         assert sirepo.job.UNIQUE_KEY_RE.search(d), "invalid directory={}".format(d)
         d = sirepo.job.DATA_FILE_ROOT.join(d)
-        assert d.check(dir=True), "directory does not exist={}".format(d)
+        assert d.check(dir=True), "directory does not exist={}, file={}".format(d,f)
         # (tornado ensures no '..' and '.'), but a bit of sanity doesn't hurt
         assert not f.startswith("."), "invalid file={}".format(f)
         d.join(f).write_binary(self.request.body)
