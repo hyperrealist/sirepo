@@ -6,9 +6,10 @@
 """
 from pykern.pkcollections import PKDict
 from pykern.pkdebug import pkdc, pkdlog, pkdp
-import pykern.pkio
-import os
 import fcntl
+import os
+import pykern.pkconfig
+import pykern.pkio
 import tornado.gen
 
 _SLEEP_MS = 50
@@ -18,10 +19,10 @@ class FileLock:
     def __init__(self, path):
         self._path = str(pykern.pkio.py_path(path)) + ".lock"
 
-    async def __enter__(self):
-        for i in _SLEEP_MS * _cfg.timeout:
+    async def __aenter__(self):
+        for i in range((1000 // _SLEEP_MS) * _cfg.timeout):
             try:
-                f = os.open(self.path, os.O_RDWR | os.O_CREAT | os.O_TRUNC)
+                f = os.open(self._path, os.O_RDWR | os.O_CREAT | os.O_TRUNC)
                 fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
                 # Verify open file and path on disk are same file
                 # https://stackoverflow.com/a/18745264
@@ -32,18 +33,20 @@ class FileLock:
                 pass
             if f:
                 try:
-                    f.close()
+                    os.close(f)
                 except Exception:
                     pass
-            await tornado.gen.sleep(self.cfg.agent_log_read_sleep)
+            await tornado.gen.sleep(_SLEEP_MS * i)
         raise RuntimeError(f"fail to flock path={self._path} timeout={_cfg.timeout}")
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
         if self._lock:
-            unlink(self.path)
-            self._lock.close()
+            os.unlink(self._path)
+            os.close(self._lock)
             self._lock = None
         return False
 
 
-_cfg = pkconfig.init(timeout=(60, pkconfig.parse_seconds, "how long to wait on flock"))
+_cfg = pykern.pkconfig.init(
+    timeout=(60, pykern.pkconfig.parse_seconds, "how long to wait on flock"),
+)
