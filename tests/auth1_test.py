@@ -30,7 +30,7 @@ def test_login():
             qcall.auth.require_user()
         qcall.cookie.set_sentinel()
         try:
-             r = asyncio.run(qcall.auth.login("guest", sim_type="myapp"))
+            r = asyncio.run(qcall.auth.login("guest", sim_type="myapp"))
             pkfail("expecting sirepo.util.SReplyExc")
         except util.SReplyExc as e:
             r = e.sr_args.sreply
