@@ -178,15 +178,11 @@ class _Auth(sirepo.quest.Attr):
         """Update the database with the user's display_name and sets state to logged-in.
         Guests will have no name.
         """
-        u = self._qcall_bound_user()
-        with sirepo.util.THREAD_LOCK:
-            r = self.user_registration(u)
-            if self._qcall_bound_method() == METHOD_GUEST and name is not None:
-                raise AssertionError(
-                    "user name={name} should be None with method={METHOD_GUEST}",
-                )
-            r.display_name = name
-            r.save()
+        if self._qcall_bound_method() == METHOD_GUEST and name is not None:
+            raise AssertionError(
+                "user name={name} should be None with method={METHOD_GUEST}",
+            )
+        self.user_registration(self._qcall_bound_user(), display_name=name)
         self.qcall.cookie.set_value(_COOKIE_STATE, _STATE_LOGGED_IN)
 
     def cookie_cleaner(self, values):
@@ -535,13 +531,10 @@ class _Auth(sirepo.quest.Attr):
         self._set_log_user()
 
     def unchecked_get_user(self, uid):
-        with sirepo.util.THREAD_LOCK:
-            u = self.qcall.auth_db.model("UserRegistration").unchecked_search_by(
-                uid=uid
-            )
-            if u:
-                return u.uid
-            return None
+        u = self.qcall.auth_db.model("UserRegistration").unchecked_search_by(uid=uid)
+        if u:
+            return u.uid
+        return None
 
     def user_dir_not_found(self, user_dir, uid):
         """Called by sirepo.reply when user_dir is not found

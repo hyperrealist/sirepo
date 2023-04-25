@@ -44,8 +44,8 @@ class API(sirepo.quest.API):
             else:
                 u = m.new(oauth_id=d["id"], user_name=d["login"])
             u.save()
-            self.auth.login(this_module, model=u, sim_type=t, want_redirect=True)
-            raise AssertionError("auth.login returned unexpectedly")
+        self.auth.login(this_module, model=u, sim_type=t, want_redirect=True)
+        raise AssertionError("auth.login returned unexpectedly")
 
     @sirepo.quest.Spec("require_cookie_sentinel")
     async def api_authGithubLogin(self, simulation_type):

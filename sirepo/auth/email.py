@@ -41,42 +41,74 @@ class API(sirepo.quest.API):
 
         Token must exist in db and not be expired.
         """
+
+        def _verify_confirm(sim_type, token, need_complete_registration):
+            m = self.sreq.http_method
+            if m == "GET":
+                raise sirepo.util.Redirect(
+                    sirepo.uri.local_route(
+                        sim_type,
+                        "loginWithEmailConfirm",
+                        PKDict(
+                            token=token,
+                            needCompleteRegistration=need_complete_registration,
+                        ),
+                    ),
+                )
+            assert m == "POST", "unexpect http method={}".format(m)
+            d = self.parse_json()
+            if d.get("token") != token:
+                raise sirepo.util.Error(
+                    PKDict(
+                        error="unable to confirm login",
+                        sim_type=sim_type,
+                    ),
+                    "Expected token={} in data but got data.token={}",
+                    token,
+                    d,
+                )
+            return d.get("displayName")
+
         if self.sreq.is_spider():
             raise sirepo.util.Forbidden("robots not allowed")
         req = self.parse_params(type=simulation_type)
+        m = self.auth_db.model(UserModel)
+        u = m.unchecked_search_by(token=token)
+        if u and u.expires >= sirepo.srtime.utc_now():
+            n = _verify_confirm(
+                req.type,
+                token,
+                self.auth.need_complete_registration(u),
+            )
+            reread the user record? we are in the same transaction
+
+        u, k = _try_confirm(req)
         with sirepo.util.THREAD_LOCK:
-            m = self.auth_db.model(UserModel)
-            u = m.unchecked_search_by(token=token)
-            if u and u.expires >= sirepo.srtime.utc_now():
-                n = self._verify_confirm(
-                    req.type,
-                    token,
-                    self.auth.need_complete_registration(u),
-                )
-                m.delete_changed_email(user=u)
-                u.user_name = u.unverified_email
-                u.token = None
-                u.expires = None
-                u.save()
-                self.auth.login(this_module, sim_type=req.type, model=u, display_name=n)
-                raise AssertionError("auth.login returned unexpectedly")
-            if not u:
-                pkdlog("login with invalid token={}", token)
-            else:
-                pkdlog(
-                    "login with expired token={}, email={}",
-                    token,
-                    u.unverified_email,
-                )
-            # if user is already logged in via email, then continue to the app
-            if self.auth.user_if_logged_in(AUTH_METHOD):
-                pkdlog(
-                    "user already logged in. ignoring invalid token: {}, user: {}",
-                    token,
-                    self.auth.logged_in_user(),
-                )
-                raise sirepo.util.Redirect(sirepo.uri.local_route(req.type))
-            self.auth.login_fail_redirect(req.type, this_module, "email-token")
+            m.delete_changed_email(user=u)
+            u.user_name = u.unverified_email
+            u.token = None
+            u.expires = None
+            u.save()
+            self.auth.login(this_module, sim_type=req.type, model=u, display_name=n)
+            raise AssertionError("auth.login returned unexpectedly")
+
+        if not u:
+            pkdlog("login with invalid token={}", token)
+        else:
+            pkdlog(
+                "login with expired token={}, email={}",
+                token,
+                u.unverified_email,
+            )
+        # if user is already logged in via email, then continue to the app
+        if self.auth.user_if_logged_in(AUTH_METHOD):
+            pkdlog(
+                "user already logged in. ignoring invalid token: {}, user: {}",
+                token,
+                self.auth.logged_in_user(),
+            )
+            raise sirepo.util.Redirect(sirepo.uri.local_route(req.type))
+        self.auth.login_fail_redirect(req.type, this_module, "email-token")
 
     @sirepo.quest.Spec("require_cookie_sentinel", email="Email")
     async def api_authEmailLogin(self):
@@ -129,33 +161,6 @@ class API(sirepo.quest.API):
             pkdlog("{}", uri)
             return self.reply_ok({"uri": uri})
         return self.reply_ok()
-
-    def _verify_confirm(self, sim_type, token, need_complete_registration):
-        m = self.sreq.http_method
-        if m == "GET":
-            raise sirepo.util.Redirect(
-                sirepo.uri.local_route(
-                    sim_type,
-                    "loginWithEmailConfirm",
-                    PKDict(
-                        token=token,
-                        needCompleteRegistration=need_complete_registration,
-                    ),
-                ),
-            )
-        assert m == "POST", "unexpect http method={}".format(m)
-        d = self.parse_json()
-        if d.get("token") != token:
-            raise sirepo.util.Error(
-                PKDict(
-                    error="unable to confirm login",
-                    sim_type=sim_type,
-                ),
-                "Expected token={} in data but got data.token={}",
-                token,
-                d,
-            )
-        return d.get("displayName")
 
 
 def avatar_uri(qcall, model, size):
