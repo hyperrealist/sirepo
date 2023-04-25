@@ -46,7 +46,7 @@ class API(sirepo.quest.API):
             req.id,
             checked=True,
         )
-        self.auth.login(
+        await self.auth.login(
             this_module,
             uid=simulation_db.uid_from_dir_name(path),
             # do not supply sim_type (see auth.login)

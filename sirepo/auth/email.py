@@ -83,7 +83,13 @@ class API(sirepo.quest.API):
             u.token = None
             u.expires = None
             u.save()
-            self.auth.login(this_module, sim_type=req.type, model=u, display_name=n)
+            self.auth_db.commit()
+            await self.auth.login(
+                this_module,
+                sim_type=req.type,
+                model=u,
+                display_name=n,
+            )
             raise AssertionError("auth.login returned unexpectedly")
         if not u:
             pkdlog("login with invalid token={}", token)
@@ -109,15 +115,48 @@ class API(sirepo.quest.API):
 
         User has sent an email, which needs to be verified.
         """
+
+        def _parse_email(self, data):
+            res = data.email.strip().lower()
+            assert pyisemail.is_email(res), "invalid post data: email={}".format(
+                data.email
+            )
+            return res
+
+        def _send_login_email(user, uri):
+            login_text = (
+                "sign in to"
+                if user.user_name
+                else "confirm your email and finish creating"
+            )
+            r = sirepo.smtp.send(
+                recipient=user.unverified_email,
+                subject="Sign in to Sirepo",
+                body="""
+        Click the link below to {} your Sirepo account.
+
+        This link will expire in {} hours and can only be used once.
+
+        {}
+        """.format(
+                    login_text, self.auth_db.model(UserModel).EXPIRES_MINUTES / 60, uri
+                ),
+            )
+            if not r:
+                pkdlog("{}", uri)
+                return self.reply_ok({"uri": uri})
+            return self.reply_ok()
+
         req = self.parse_post()
-        email = self._parse_email(req.req_data)
+        email = _parse_email(req.req_data)
         m = self.auth_db.model(UserModel)
         u = m.unchecked_search_by(unverified_email=email)
         if not u:
             u = m.new(unverified_email=email)
         u.create_token()
         u.save()
-        return self._send_login_email(
+        self.auth_db.commit()
+        return _send_login_email(
             u,
             self.absolute_uri(
                 self.uri_for_api(
@@ -126,33 +165,6 @@ class API(sirepo.quest.API):
                 ),
             ),
         )
-
-    def _parse_email(self, data):
-        res = data.email.strip().lower()
-        assert pyisemail.is_email(res), "invalid post data: email={}".format(data.email)
-        return res
-
-    def _send_login_email(self, user, uri):
-        login_text = (
-            "sign in to" if user.user_name else "confirm your email and finish creating"
-        )
-        r = sirepo.smtp.send(
-            recipient=user.unverified_email,
-            subject="Sign in to Sirepo",
-            body="""
-    Click the link below to {} your Sirepo account.
-
-    This link will expire in {} hours and can only be used once.
-
-    {}
-    """.format(
-                login_text, self.auth_db.model(UserModel).EXPIRES_MINUTES / 60, uri
-            ),
-        )
-        if not r:
-            pkdlog("{}", uri)
-            return self.reply_ok({"uri": uri})
-        return self.reply_ok()
 
 
 def avatar_uri(qcall, model, size):

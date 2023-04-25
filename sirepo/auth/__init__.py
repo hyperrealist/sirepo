@@ -309,7 +309,6 @@ class _Auth(sirepo.quest.Attr):
         model=None,
         sim_type=None,
         display_name=None,
-        is_mock=False,
         want_redirect=False,
     ):
         """Login the user
@@ -317,17 +316,13 @@ class _Auth(sirepo.quest.Attr):
         Raises an exception if successful, except in the case of methods
 
         Args:
-            method (module or str): method module (only if is_mock) [None]
+            method (module or str): method module
             uid (str): user to login [None]
             model (auth_db.UserDbBase): user to login (overrides uid) [None]
             sim_type (str): app to redirect to [None]
             display_name (str): to save as the display_name [None]
-            is_mock (bool): simulated login for srunit.quest_start [False]
             want_redirect (bool): http redirect on success [False]
         """
-        if method is None:
-            assert is_mock, "only used by srunit.quest_start"
-            method = METHOD_GUEST
         mm = _METHOD_MODULES[method] if isinstance(method, str) else method
         self._validate_method(mm, sim_type=sim_type)
         guest_uid = None
@@ -369,8 +364,6 @@ class _Auth(sirepo.quest.Attr):
                 model.save()
         if display_name:
             self.complete_registration(self.parse_display_name(display_name))
-        if is_mock:
-            return
         if sim_type:
             if guest_uid and guest_uid != uid:
                 simulation_db.migrate_guest_to_persistent_user(guest_uid, uid)
@@ -413,6 +406,13 @@ class _Auth(sirepo.quest.Attr):
         raise sirepo.util.SReplyExc(
             sreply=self.qcall.reply_ok(PKDict(authState=self._auth_state())),
         )
+
+    def create_and_login_user(self):
+        """Create a new guest user and log them in
+
+        Only useful for testing.
+        """
+        self._create_user(_METHOD_MODULES[METHOD_GUEST], want_login=True)
 
     def need_complete_registration(self, model_or_uid):
         """Does unauthenticated user need to complete registration?

@@ -79,7 +79,8 @@ class API(sirepo.quest.API):
         )
         if r:
             return self.reply_ok(PKDict(form_error=r))
-        self.auth.login(
+        self.auth_db.commit()
+        await self.auth.login(
             this_module, sim_type=req.type, model=_user(res.email), want_redirect=True
         )
 
