@@ -593,7 +593,11 @@ class _Auth(sirepo.quest.Attr):
             auth.UserRegistration: record (potentially blank)
         """
         res = self.qcall.auth_db.model("UserRegistration").unchecked_search_by(uid=uid)
-        if not res:
+        if res:
+            if display_name is not None:
+                res.display_name = display_name
+                res.save()
+        else:
             res = self.qcall.auth_db.model(
                 "UserRegistration",
                 created=datetime.datetime.utcnow(),

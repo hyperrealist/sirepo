@@ -91,6 +91,9 @@ _dev_version = None
 _SIM_DB_FILE_PATH_RE = re.compile(r"^[a-zA-Z0-9-_\.]{1,128}$")
 
 
+_THREAD_LOCK = contextlib.nullcontext()
+
+
 def app_version():
     """Force the version to be dynamic if running in dev channel
 
@@ -357,7 +360,7 @@ def migrate_guest_to_persistent_user(guest_uid, to_uid):
         to_uid (str): dest user
 
     """
-    with util.THREAD_LOCK:
+    with _THREAD_LOCK:
         for path in glob.glob(
             str(user_path(uid=guest_uid).join("*", "*", SIMULATION_DATA_FILE)),
         ):
@@ -555,7 +558,7 @@ def save_simulation_json(data, fixup, do_validate=True, qcall=None, modified=Fal
     s = data.models.simulation
     sim_type = data.simulationType
     fn = sim_data_file(sim_type, s.simulationId, qcall=qcall)
-    with util.THREAD_LOCK:
+    with _THREAD_LOCK:
         need_validate = True
         try:
             # OPTIMIZATION: If folder/name same, avoid reading entire folder
@@ -646,7 +649,7 @@ def simulation_dir(simulation_type, sid=None, qcall=None):
     """
     p = user_path(qcall=qcall)
     d = p.join(sirepo.template.assert_sim_type(simulation_type))
-    with util.THREAD_LOCK:
+    with _THREAD_LOCK:
         if not d.exists():
             _create_lib_and_examples(p, d.basename, qcall=qcall)
     if not sid:
@@ -802,7 +805,7 @@ def validate_serial(req_data, qcall):
             "req_data={} != server={}", req_data.get("version"), SCHEMA_COMMON.version
         )
         raise util.SRException("serverUpgraded", None)
-    with util.THREAD_LOCK:
+    with _THREAD_LOCK:
         sim_type = sirepo.template.assert_sim_type(req_data.simulationType)
         sid = req_data.models.simulation.simulationId
         req_ser = req_data.models.simulation.simulationSerial
@@ -1061,7 +1064,7 @@ def _serial_new():
     """
     global _serial_prev
     res = int(time.time() * 1000000)
-    with util.THREAD_LOCK:
+    with _THREAD_LOCK:
         # Good enough assertion. Any collisions will also be detected
         # by parameter hash so order isn't only validation
         assert res > _serial_prev, "{}: serial did not increase: prev={}".format(

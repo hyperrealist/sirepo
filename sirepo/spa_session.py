@@ -10,7 +10,7 @@ import contextlib
 import datetime
 import sirepo.quest
 import sirepo.srtime
-import sirepo.util
+import threading
 
 _REFRESH_SESSION = datetime.timedelta(seconds=5 * 60)
 
@@ -26,7 +26,7 @@ def init_module(flask):
     global _initialized, _cfg, _THREAD_LOCK
     if _initialized:
         return
-    _THREAD_LOCK = threading.RLock() if flask else contextlib.nullcontext
+    _THREAD_LOCK = threading.RLock() if flask else contextlib.nullcontext()
     _initialized = True
 
 
@@ -44,11 +44,11 @@ async def init_quest(qcall):
         if s:
             if t - s.request_time < _REFRESH_SESSION:
                 return False
-            with sirepo.util.THREAD_LOCK:
+            with _THREAD_LOCK:
                 s.request_time = t
         else:
             s = PKDict(request_time=t)
-            with sirepo.util.THREAD_LOCK:
+            with _THREAD_LOCK:
                 _DB[u] = s
         return True
 

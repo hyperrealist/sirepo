@@ -19,7 +19,6 @@ import pykern.pkjson
 import re
 import random
 import six
-import threading
 import unicodedata
 import zipfile
 
