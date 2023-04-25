@@ -16,7 +16,7 @@ _SLEEP_MS = 50
 
 class FileLock:
     def __init__(self, path):
-        self._path = str(pykern.pkio.py_path(path)) + ".flock"
+        self._path = str(pykern.pkio.py_path(path)) + ".lock"
 
     async def __enter__(self):
         for i in _SLEEP_MS * _cfg.timeout:
@@ -35,15 +35,14 @@ class FileLock:
                     f.close()
                 except Exception:
                     pass
-            commit here?
             await tornado.gen.sleep(self.cfg.agent_log_read_sleep)
-
         raise RuntimeError(f"fail to flock path={self._path} timeout={_cfg.timeout}")
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self._lock:
             unlink(self.path)
             self._lock.close()
+            self._lock = None
         return False
 
 
