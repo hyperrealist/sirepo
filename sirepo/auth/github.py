@@ -44,7 +44,12 @@ class API(sirepo.quest.API):
             u = m.new(oauth_id=d["id"], user_name=d["login"])
         u.save()
         self.auth_db.commit()
-        await self.auth.login(this_module, model=u, sim_type=t, want_redirect=True)
+        await self.auth.login(
+            this_module,
+            model=m.unchecked_search_by(oauth_id=d["id"]),
+            sim_type=t,
+            want_redirect=True,
+        )
         raise AssertionError("auth.login returned unexpectedly")
 
     @sirepo.quest.Spec("require_cookie_sentinel")

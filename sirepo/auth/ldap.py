@@ -49,10 +49,12 @@ class API(sirepo.quest.API):
         def _user(email):
             m = self.auth_db.model(user_model)
             u = m.unchecked_search_by(unverified_email=email)
-            if not u:
-                u = m.new(unverified_email=email, user_name=email)
-                u.save()
-            return u
+            if u:
+                return u
+            u = m.new(unverified_email=email, user_name=email)
+            u.save()
+            self.auth_db.commit()
+            return m.unchecked_search_by(unverified_email=email)
 
         def _validate_entry(creds, field):
             if not creds[field]:
@@ -79,7 +81,6 @@ class API(sirepo.quest.API):
         )
         if r:
             return self.reply_ok(PKDict(form_error=r))
-        self.auth_db.commit()
         await self.auth.login(
             this_module, sim_type=req.type, model=_user(res.email), want_redirect=True
         )
