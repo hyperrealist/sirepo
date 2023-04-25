@@ -31,11 +31,12 @@ def test_migration():
     from pykern import pkconfig
 
     with srunit.quest_start(cfg=_cfg) as qcall:
+        import asyncio
         from pykern.pkunit import pkeq, pkok, pkexcept, work_dir
         from pykern.pkdebug import pkdp
 
         # deprecated methods raise Unauthorized, but still login
         with pkexcept("SRException.*deprecated"):
-            qcall.auth.login(method="github", uid="jeTJR5G4")
+            asyncio.run(qcall.auth.login(method="github", uid="jeTJR5G4"))
         # verify logged in
         pkeq("jeTJR5G4", qcall.auth.user_if_logged_in("github"))

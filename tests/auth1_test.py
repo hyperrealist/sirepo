@@ -14,6 +14,7 @@ def test_login():
     from sirepo import srunit
 
     with srunit.quest_start() as qcall:
+        import asyncio
         from pykern import pkunit, pkcompat
         from pykern.pkunit import pkeq, pkok, pkre, pkfail, pkexcept
         from sirepo import util
@@ -29,7 +30,7 @@ def test_login():
             qcall.auth.require_user()
         qcall.cookie.set_sentinel()
         try:
-            r = qcall.auth.login("guest", sim_type="myapp")
+             r = asyncio.run(qcall.auth.login("guest", sim_type="myapp"))
             pkfail("expecting sirepo.util.SReplyExc")
         except util.SReplyExc as e:
             r = e.sr_args.sreply

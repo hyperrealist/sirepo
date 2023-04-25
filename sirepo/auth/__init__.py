@@ -302,7 +302,7 @@ class _Auth(sirepo.quest.Attr):
             self._logged_in_user = u
             self._logged_in_method = m
 
-    def login(
+    async def login(
         self,
         method=None,
         uid=None,
@@ -463,7 +463,7 @@ class _Auth(sirepo.quest.Attr):
         if not uid:
             raise sirepo.util.WWWAuthenticate()
         self.qcall.cookie.set_sentinel()
-        self.login(m, uid=uid)
+        self._login_user(m, uid)
 
     def require_email_user(self):
         i = self.require_user()
