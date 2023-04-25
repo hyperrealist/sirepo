@@ -18,11 +18,15 @@ _DB = PKDict()
 
 _initialized = None
 
+#: Lock for operations across Sirepo (server)
+_THREAD_LOCK = None
 
-def init_module():
-    global _initialized, _cfg
+
+def init_module(flask):
+    global _initialized, _cfg, _THREAD_LOCK
     if _initialized:
         return
+    _THREAD_LOCK = threading.RLock() if flask else contextlib.nullcontext
     _initialized = True
 
 
