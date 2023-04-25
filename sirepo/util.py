@@ -32,9 +32,6 @@ AUTH_HEADER = "Authorization"
 #: http auth header scheme bearer
 AUTH_HEADER_SCHEME_BEARER = "Bearer"
 
-#: Lock for operations across Sirepo (server)
-THREAD_LOCK = threading.RLock()
-
 #: length of string returned by create_token
 TOKEN_SIZE = 16
 

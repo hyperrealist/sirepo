@@ -42,7 +42,7 @@ class API(sirepo.quest.API):
         Token must exist in db and not be expired.
         """
 
-        def _verify_confirm(sim_type, token, need_complete_registration):
+        def _verify_confirm(sim_type, token, user):
             m = self.sreq.http_method
             if m == "GET":
                 raise sirepo.util.Redirect(
@@ -51,7 +51,9 @@ class API(sirepo.quest.API):
                         "loginWithEmailConfirm",
                         PKDict(
                             token=token,
-                            needCompleteRegistration=need_complete_registration,
+                            needCompleteRegistration=self.auth.need_complete_registration(
+                                u
+                            ),
                         ),
                     ),
                 )
@@ -75,15 +77,7 @@ class API(sirepo.quest.API):
         m = self.auth_db.model(UserModel)
         u = m.unchecked_search_by(token=token)
         if u and u.expires >= sirepo.srtime.utc_now():
-            n = _verify_confirm(
-                req.type,
-                token,
-                self.auth.need_complete_registration(u),
-            )
-            reread the user record? we are in the same transaction
-
-        u, k = _try_confirm(req)
-        with sirepo.util.THREAD_LOCK:
+            n = _verify_confirm(req.type, token)
             m.delete_changed_email(user=u)
             u.user_name = u.unverified_email
             u.token = None
@@ -91,7 +85,6 @@ class API(sirepo.quest.API):
             u.save()
             self.auth.login(this_module, sim_type=req.type, model=u, display_name=n)
             raise AssertionError("auth.login returned unexpectedly")
-
         if not u:
             pkdlog("login with invalid token={}", token)
         else:
@@ -118,13 +111,12 @@ class API(sirepo.quest.API):
         """
         req = self.parse_post()
         email = self._parse_email(req.req_data)
-        with sirepo.util.THREAD_LOCK:
-            m = self.auth_db.model(UserModel)
-            u = m.unchecked_search_by(unverified_email=email)
-            if not u:
-                u = m.new(unverified_email=email)
-            u.create_token()
-            u.save()
+        m = self.auth_db.model(UserModel)
+        u = m.unchecked_search_by(unverified_email=email)
+        if not u:
+            u = m.new(unverified_email=email)
+        u.create_token()
+        u.save()
         return self._send_login_email(
             u,
             self.absolute_uri(

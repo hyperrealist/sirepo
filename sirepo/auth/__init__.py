@@ -545,16 +545,13 @@ class _Auth(sirepo.quest.Attr):
             user_dir (str): directory not found
             uid (str): user
         """
-        with sirepo.util.THREAD_LOCK:
-            for m in _METHOD_MODULES.values():
-                u = self._method_user_model(m, uid)
-                if u:
-                    u.delete()
-            u = self.qcall.auth_db.model("UserRegistration").unchecked_search_by(
-                uid=uid
-            )
+        for m in _METHOD_MODULES.values():
+            u = self._method_user_model(m, uid)
             if u:
                 u.delete()
+        u = self.qcall.auth_db.model("UserRegistration").unchecked_search_by(uid=uid)
+        if u:
+            u.delete()
         self.reset_state()
         pkdlog("user_dir={} uid={}", user_dir, uid)
         return self.qcall.reply_redirect_for_app_root()
