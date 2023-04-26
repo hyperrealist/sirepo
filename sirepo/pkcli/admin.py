@@ -169,36 +169,35 @@ def _get_examples_by_type(qcall):
     )
 
 
+def _get_named_example_sims(qcall, all_sim_types):
+    return PKDict(
+        {
+            t: PKDict(
+                {
+                    x.name: x
+                    for x in simulation_db.iterate_simulation_datafiles(
+                        t,
+                        simulation_db.process_simulation_list,
+                        {"simulation.isExample": True},
+                        qcall=qcall,
+                    )
+                }
+            )
+            for t in all_sim_types
+        }
+    )
+
+
 def _is_src_dir(d):
     return re.search(r"/src$", str(d))
 
 
 def _iterate_sims_by_users(qcall, all_sim_types):
-    import asyncio
-
-    async def _get_named_example_sims(qcall, all_sim_types):
-        return PKDict(
-            {
-                t: PKDict(
-                    {
-                        x.name: x
-                        for x in simulation_db.iterate_simulation_datafiles(
-                            t,
-                            simulation_db.process_simulation_list,
-                            {"simulation.isExample": True},
-                            qcall=qcall,
-                        )
-                    }
-                )
-                for t in all_sim_types
-            }
-        )
-
     for d in pkio.sorted_glob(simulation_db.user_path_root().join("*")):
         if _is_src_dir(d):
             continue
         with qcall.auth.logged_in_user_set(simulation_db.uid_from_dir_name(d)):
-            s = asyncio.run(_get_named_example_sims(qcall, all_sim_types))
+            s = _get_named_example_sims(qcall, all_sim_types)
             for t in s.keys():
                 yield (t, s)
 
