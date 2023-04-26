@@ -10,6 +10,24 @@ import pytest
 def test_four():
     import asyncio
     from pykern import pkunit
+    from sirepo import file_lock
+    from pykern.pkdebug import pkdp
+
+    async def _io(expect, append, before=0, after=0):
+        p = _path()
+        if before:
+            await asyncio.sleep(before)
+        async with file_lock.FileLock(p):
+            v = p.read() if p.exists() else ""
+            pkunit.pkeq(expect, v)
+            p.write(v + append)
+            if after:
+                await asyncio.sleep(after)
+
+    def _path():
+        from pykern import pkunit
+
+        return pkunit.work_dir().join("foo")
 
     pkunit.empty_work_dir()
 
@@ -29,29 +47,10 @@ def test_four():
 def test_happy():
     import asyncio
     from pykern import pkunit
-
-    pkunit.empty_work_dir()
-    asyncio.run(_io("", "x"))
-
-
-async def _io(expect, append, before=0, after=0):
-    import asyncio
-    from pykern import pkunit
     from sirepo import file_lock
-    from pykern.pkdebug import pkdp
 
-    p = _path()
-    if before:
-        await asyncio.sleep(before)
-    async with file_lock.FileLock(p):
-        v = p.read() if p.exists() else ""
-        pkunit.pkeq(expect, v)
-        p.write(v + append)
-        if after:
-            await asyncio.sleep(after)
+    async def _simple(path):
+        async with file_lock.FileLock(path):
+            pass
 
-
-def _path():
-    from pykern import pkunit
-
-    return pkunit.work_dir().join("foo")
+    asyncio.run(_simple(pkunit.empty_work_dir()))

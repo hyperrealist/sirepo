@@ -526,7 +526,7 @@ def post_execution_processing(success_exit, is_parallel, run_dir, **kwargs):
     return _parse_opal_log(run_dir)
 
 
-def prepare_for_client(data, qcall, **kwargs):
+async def prepare_for_client(data, qcall, **kwargs):
     code_var(data.models.rpnVariables).compute_cache(data, SCHEMA)
     return data
 

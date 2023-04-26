@@ -55,7 +55,7 @@ class API(sirepo.quest.API):
         if not m:
             raise RuntimeError("failed to find sid in resp={}".format(c))
         i = m.group(1)
-        d = simulation_db.read_simulation_json(simulation_type, sid=i, qcall=self)
+        d = await simulation_db.read_simulation_json(simulation_type, sid=i, qcall=self)
         try:
             d.models.electronBeam.current = d.models.electronBeam.current + (
                 random.random() / 10

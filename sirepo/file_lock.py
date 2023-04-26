@@ -20,7 +20,12 @@ _LOOP_COUNT = None
 
 class FileLock:
     def __init__(self, path):
-        self._path = str(pykern.pkio.py_path(path)) + ".lock"
+        p = pykern.pkio.py_path(path)
+        if p.check(dir=True):
+            p = p.join("lock")
+        else:
+            p += ".lock"
+        self._path = str(p)
 
     async def __aenter__(self):
         for i in range(_LOOP_COUNT):

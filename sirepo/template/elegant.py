@@ -762,7 +762,9 @@ async def import_file(req, test_data=None, **kwargs):
     # input_data is passed by test cases only
     d = test_data
     if "id" in req:
-        d = simulation_db.read_simulation_json(SIM_TYPE, sid=req.id, qcall=req.qcall)
+        d = await simulation_db.read_simulation_json(
+            SIM_TYPE, sid=req.id, qcall=req.qcall
+        )
     p = pkio.py_path(req.filename)
     res = parse_input_text(p, req.form_file.as_str(), d, qcall=req.qcall)
     res.models.simulation.name = p.purebasename
@@ -808,7 +810,7 @@ def parse_input_text(
     )
 
 
-def prepare_for_client(data, qcall, **kwargs):
+async def prepare_for_client(data, qcall, **kwargs):
     code_var(data.models.rpnVariables).compute_cache(data, SCHEMA)
     return data
 

@@ -608,7 +608,7 @@ async def import_file(req, tmp_dir, qcall, **kwargs):
             )
         x = x.get(PARSED_DATA_ATTR)
         x.models.simulation.simulationId = i
-        x = simulation_db.save_simulation_json(
+        x = await simulation_db.save_simulation_json(
             x, do_validate=True, fixup=True, qcall=qcall
         )
     except Exception:
@@ -664,7 +664,7 @@ def post_execution_processing(
     return _parse_srw_log(run_dir)
 
 
-def prepare_for_client(data, qcall, **kwargs):
+async def prepare_for_client(data, qcall, **kwargs):
     save = False
     for model_name in _USER_MODEL_LIST_FILENAME.keys():
         if (
@@ -707,7 +707,7 @@ def prepare_for_client(data, qcall, **kwargs):
             "save simulation json with sim_data_template_fixup={}",
             data.get("sim_data_template_fixup", None),
         )
-        simulation_db.save_simulation_json(data, fixup=True, qcall=qcall)
+        await simulation_db.save_simulation_json(data, fixup=True, qcall=qcall)
     return data
 
 

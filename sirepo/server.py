@@ -93,7 +93,7 @@ class API(sirepo.quest.API):
     async def api_copySimulation(self):
         """Takes the specified simulation and returns a newly named copy with the suffix ( X)"""
         req = self.parse_post(id=True, folder=True, name=True, template=True)
-        d = simulation_db.read_simulation_json(req.type, sid=req.id, qcall=self)
+        d = await simulation_db.read_simulation_json(req.type, sid=req.id, qcall=self)
         d.models.simulation.pkupdate(
             name=req.name,
             folder=req.folder,
@@ -373,7 +373,9 @@ class API(sirepo.quest.API):
             if not f:
                 raise sirepo.util.NotFound(f"API not supported for tempate={req.type}")
             return f(
-                simulation_db.read_simulation_json(req.type, sid=req.id, qcall=self),
+                await simulation_db.read_simulation_json(
+                    req.type, sid=req.id, qcall=self
+                ),
                 qcall=self,
             )
 
@@ -402,7 +404,9 @@ class API(sirepo.quest.API):
             if not f:
                 raise sirepo.util.NotFound(f"API not supported for tempate={req.type}")
             return f(
-                simulation_db.read_simulation_json(req.type, sid=req.id, qcall=self),
+                await simulation_db.read_simulation_json(
+                    req.type, sid=req.id, qcall=self
+                ),
                 qcall=self,
             )
 
@@ -524,7 +528,7 @@ class API(sirepo.quest.API):
         req = self.parse_post(id=True, template=True)
         d = req.req_data
         simulation_db.validate_serial(d, qcall=self)
-        return self._simulation_data_reply(
+        return await self._simulation_data_reply(
             req,
             simulation_db.save_simulation_json(
                 d, fixup=True, modified=True, qcall=self
@@ -569,7 +573,7 @@ class API(sirepo.quest.API):
         req = self.parse_params(type=simulation_type, id=simulation_id, template=True)
         try:
             d = simulation_db.read_simulation_json(req.type, sid=req.id, qcall=self)
-            return self._simulation_data_reply(req, d)
+            return await self._simulation_data_reply(req, d)
         except sirepo.util.SPathNotFound:
             return _not_found(req)
 
@@ -764,14 +768,14 @@ class API(sirepo.quest.API):
         return self.reply_static_jinja(page, "html", values, cache_ok=True)
 
     def _save_new_and_reply(self, req, data):
-        return self._simulation_data_reply(
+        return await self._simulation_data_reply(
             req,
             simulation_db.save_new_simulation(data, qcall=self),
         )
 
-    def _simulation_data_reply(self, req, data):
+    async def _simulation_data_reply(self, req, data):
         if hasattr(req.template, "prepare_for_client"):
-            d = req.template.prepare_for_client(data, qcall=self)
+            d = await req.template.prepare_for_client(data, qcall=self)
         return self.headers_for_no_cache(self.reply_json(data))
 
 

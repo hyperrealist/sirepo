@@ -27,6 +27,7 @@ import os.path
 import random
 import re
 import sirepo.const
+import sirepo.file_lock
 import sirepo.mpi
 import sirepo.resource
 import sirepo.srdb
@@ -350,7 +351,7 @@ def lib_dir_from_sim_dir(sim_dir):
     return _sim_from_path(sim_dir)[1].join(_REL_LIB_DIR)
 
 
-def migrate_guest_to_persistent_user(guest_uid, to_uid):
+async def migrate_guest_to_persistent_user(guest_uid, to_uid, qcall):
     """Moves all non-example simulations `guest_uid` into `to_uid`.
 
     Only moves non-example simulations. Doesn't delete the guest_uid.
@@ -358,11 +359,11 @@ def migrate_guest_to_persistent_user(guest_uid, to_uid):
     Args:
         guest_uid (str): source user
         to_uid (str): dest user
-
     """
-    with _THREAD_LOCK:
+    p = user_path(uid=guest_uid, qcall=qcall, check=True)
+    async with sirepo.file_lock.FileLock(p):
         for path in glob.glob(
-            str(user_path(uid=guest_uid).join("*", "*", SIMULATION_DATA_FILE)),
+            str(p.join("*", "*", SIMULATION_DATA_FILE)),
         ):
             data = read_json(path)
             sim = data["models"]["simulation"]
@@ -406,7 +407,9 @@ def open_json_file(sim_type, path=None, sid=None, fixup=True, save=False, qcall=
         return data
     d, c = fixup_old_data(data, path=p, qcall=qcall)
     if c and save:
-        return save_simulation_json(d, fixup=False, do_validate=False, qcall=qcall)
+        return await save_simulation_json(
+            d, fixup=False, do_validate=False, qcall=qcall
+        )
     return d
 
 
@@ -558,7 +561,7 @@ def save_simulation_json(data, fixup, do_validate=True, qcall=None, modified=Fal
     s = data.models.simulation
     sim_type = data.simulationType
     fn = sim_data_file(sim_type, s.simulationId, qcall=qcall)
-    with _THREAD_LOCK:
+    with sirepo.file_lock.FileLock(fn):
         need_validate = True
         try:
             # OPTIMIZATION: If folder/name same, avoid reading entire folder
@@ -647,11 +650,12 @@ def simulation_dir(simulation_type, sid=None, qcall=None):
         sid (str): simulation id (optional)
         uid (str): user id
     """
-    p = user_path(qcall=qcall)
+    p = user_path(qcall=qcall, check=True)
     d = p.join(sirepo.template.assert_sim_type(simulation_type))
-    with _THREAD_LOCK:
-        if not d.exists():
-            _create_lib_and_examples(p, d.basename, qcall=qcall)
+    if not d.exists():
+        with sirepo.file_lock.FileLock(p):
+            if not d.exists():
+                _create_lib_and_examples(p, d.basename, qcall=qcall)
     if not sid:
         return d
     return d.join(assert_sid(sid))

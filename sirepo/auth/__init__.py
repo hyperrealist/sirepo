@@ -366,7 +366,12 @@ class _Auth(sirepo.quest.Attr):
             self.complete_registration(self.parse_display_name(display_name))
         if sim_type:
             if guest_uid and guest_uid != uid:
-                simulation_db.migrate_guest_to_persistent_user(guest_uid, uid)
+                self.qcall.auth_db.commit()
+                await simulation_db.migrate_guest_to_persistent_user(
+                    guest_uid,
+                    uid,
+                    qcall=self.qcall,
+                )
             self.login_success_response(sim_type, want_redirect)
         assert not mm.AUTH_METHOD_VISIBLE
 
@@ -510,6 +515,7 @@ class _Auth(sirepo.quest.Attr):
             if m == METHOD_GUEST:
                 pkdc("guest completeRegistration={}", u)
                 self.complete_registration()
+                self.qcall.auth_db.commit()
                 return u
             r = "completeRegistration"
             e = "uid={} needs to complete registration".format(u)
@@ -553,6 +559,7 @@ class _Auth(sirepo.quest.Attr):
         if u:
             u.delete()
         self.reset_state()
+        self.qcall.auth_db.commit()
         pkdlog("user_dir={} uid={}", user_dir, uid)
         return self.qcall.reply_redirect_for_app_root()
 
