@@ -307,8 +307,11 @@ def iterate_simulation_datafiles(simulation_type, op, search=None, qcall=None):
     sim_dir = simulation_dir(simulation_type, qcall=qcall)
     for p in pkio.sorted_glob(sim_dir.join("*", SIMULATION_DATA_FILE)):
         try:
-            data = open_json_file(
-                simulation_type, path=p, fixup=True, qcall=qcall, save=True
+            data = await open_json_file_with_save(
+                simulation_type,
+                path=p,
+                fixup=True,
+                qcall=qcall,
             )
             if search and not _search_data(data, search):
                 continue
@@ -376,7 +379,7 @@ async def migrate_guest_to_persistent_user(guest_uid, to_uid, qcall):
             os.rename(dir_path, new_dir_path)
 
 
-def open_json_file(sim_type, path=None, sid=None, fixup=True, save=False, qcall=None):
+def open_json_file(sim_type, path=None, sid=None, fixup=True, qcall=None):
     """Read a db file and return result
 
     Args:
@@ -406,7 +409,39 @@ def open_json_file(sim_type, path=None, sid=None, fixup=True, save=False, qcall=
     if not fixup:
         return data
     d, c = fixup_old_data(data, path=p, qcall=qcall)
-    if c and save:
+    return d
+
+
+def open_json_file_with_save(sim_type, path=None, sid=None, fixup=True, qcall=None):
+    """Read a db file and return result
+
+    Args:
+        sim_type (str): simulation type (app)
+        path (py.path.local): where to read the file
+        sid (str): simulation id
+        fixup (bool): run fixup_old_data [True]
+    Returns:
+        dict: data
+    """
+    p = path or sim_data_file(sim_type, sid, qcall=qcall)
+    if not p.exists():
+        if path:
+            raise util.NotFound("path={} not found", path)
+        raise util.SPathNotFound(sim_type=sim_type, sid=sid, uid=_uid_arg(qcall))
+    data = None
+    try:
+        with p.open() as f:
+            data = json_load(f)
+        # ensure the simulationId matches the path
+        if sid:
+            data.models.simulation.simulationId = _sim_from_path(p)[0]
+    except Exception as e:
+        pkdlog("{}: error: {}", p, pkdexc())
+        raise
+    if not fixup:
+        return data
+    d, c = fixup_old_data(data, path=p, qcall=qcall)
+    if c:
         return await save_simulation_json(
             d, fixup=False, do_validate=False, qcall=qcall
         )
@@ -496,7 +531,7 @@ def read_json(filename):
     return json_load(json_filename(filename))
 
 
-def read_simulation_json(sim_type, sid, qcall):
+async def read_simulation_json(sim_type, sid, qcall):
     """Calls `open_json_file` and fixes up data, possibly saving
 
     Args:
@@ -506,7 +541,7 @@ def read_simulation_json(sim_type, sid, qcall):
     Returns:
         data (dict): simulation data
     """
-    return open_json_file(
+    return await open_json_file_with_save(
         sim_type=sim_type,
         fixup=True,
         save=True,

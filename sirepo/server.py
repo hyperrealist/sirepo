@@ -453,7 +453,7 @@ class API(sirepo.quest.API):
     ):
         req = self.parse_params(type=simulation_type, id=simulation_id, template=True)
         m = model and req.sim_data.parse_model(model)
-        d = simulation_db.read_simulation_json(req.type, sid=req.id, qcall=self)
+        d = await simulation_db.read_simulation_json(req.type, sid=req.id, qcall=self)
         suffix = simulation_db.get_schema(
             simulation_type
         ).constants.simulationSourceExtension
@@ -480,7 +480,7 @@ class API(sirepo.quest.API):
             title=PKDict(optional=True, name="title"),
         )
         m = "compute_model" in req and req.sim_data.parse_model(req.compute_model)
-        d = simulation_db.read_simulation_json(req.type, sid=req.id, qcall=self)
+        d = await simulation_db.read_simulation_json(req.type, sid=req.id, qcall=self)
         suffix = simulation_db.get_schema(req.type).constants.simulationSourceExtension
         return self.reply_attachment(
             req.template.python_source_for_model(d, model=m, qcall=self),
@@ -572,7 +572,9 @@ class API(sirepo.quest.API):
         # TODO(robnagler) need real type transforms for inputs
         req = self.parse_params(type=simulation_type, id=simulation_id, template=True)
         try:
-            d = simulation_db.read_simulation_json(req.type, sid=req.id, qcall=self)
+            d = await simulation_db.read_simulation_json(
+                req.type, sid=req.id, qcall=self
+            )
             return await self._simulation_data_reply(req, d)
         except sirepo.util.SPathNotFound:
             return _not_found(req)
