@@ -15,7 +15,7 @@ def test_happy():
     asyncio.run(_io("", "x"))
 
 
-def test_two():
+def test_four():
     import asyncio
     from pykern import pkunit
 
