@@ -6,13 +6,16 @@
 """
 from pykern.pkcollections import PKDict
 from pykern.pkdebug import pkdc, pkdlog, pkdp
+import asyncio
 import fcntl
 import os
 import pykern.pkconfig
 import pykern.pkio
 import tornado.gen
 
-_SLEEP_MS = 50
+_LOOP_SLEEP = None
+
+_LOOP_COUNT = None
 
 
 class FileLock:
@@ -20,7 +23,7 @@ class FileLock:
         self._path = str(pykern.pkio.py_path(path)) + ".lock"
 
     async def __aenter__(self):
-        for i in range((1000 // _SLEEP_MS) * _cfg.timeout):
+        for i in range(_LOOP_COUNT):
             try:
                 f = os.open(self._path, os.O_RDWR | os.O_CREAT | os.O_TRUNC)
                 fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -36,7 +39,7 @@ class FileLock:
                     os.close(f)
                 except Exception:
                     pass
-            await tornado.gen.sleep(_SLEEP_MS * i)
+            await asyncio.sleep(_LOOP_SLEEP)
         raise RuntimeError(f"fail to flock path={self._path} timeout={_cfg.timeout}")
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
@@ -47,6 +50,14 @@ class FileLock:
         return False
 
 
-_cfg = pykern.pkconfig.init(
-    timeout=(60, pykern.pkconfig.parse_seconds, "how long to wait on flock"),
-)
+def _init():
+    global _cfg, _LOOP_SLEEP, _LOOP_COUNT
+    _cfg = pykern.pkconfig.init(
+        timeout=(60, pykern.pkconfig.parse_seconds, "how long to wait on flock"),
+    )
+    ms = 50
+    _LOOP_COUNT = _cfg.timeout * (1000 // ms)
+    _LOOP_SLEEP = ms / 1000.0
+
+
+_init()
