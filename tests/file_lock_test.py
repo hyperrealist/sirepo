@@ -7,14 +7,6 @@
 import pytest
 
 
-def test_happy():
-    import asyncio
-    from pykern import pkunit
-
-    pkunit.empty_work_dir()
-    asyncio.run(_io("", "x"))
-
-
 def test_four():
     import asyncio
     from pykern import pkunit
@@ -32,6 +24,14 @@ def test_four():
 
     asyncio.run(_start())
     pkunit.pkeq("abdc", _path().read())
+
+
+def test_happy():
+    import asyncio
+    from pykern import pkunit
+
+    pkunit.empty_work_dir()
+    asyncio.run(_io("", "x"))
 
 
 async def _io(expect, append, before=0, after=0):
