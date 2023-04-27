@@ -26,7 +26,7 @@ class FileLock:
             p += ".lock"
         self._path = str(p)
 
-    def __aenter__(self):
+    def __enter__(self):
         for i in range(_LOOP_COUNT):
             try:
                 f = os.open(self._path, os.O_RDWR | os.O_CREAT | os.O_TRUNC)
@@ -46,7 +46,7 @@ class FileLock:
             time.sleep(_LOOP_SLEEP)
         raise RuntimeError(f"fail to flock path={self._path} timeout={_cfg.timeout}")
 
-    def __aexit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type, exc_val, exc_tb):
         if self._lock:
             os.unlink(self._path)
             os.close(self._lock)
