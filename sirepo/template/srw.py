@@ -544,7 +544,7 @@ async def import_file(req, tmp_dir, qcall, **kwargs):
     i = None
     r = None
     try:
-        r = kwargs["reply_op"](simulation_db.default_data(SIM_TYPE))
+        r = kwargs["srw_save_sim"](simulation_db.default_data(SIM_TYPE))
         d = pykern.pkjson.load_any(r.content_as_str())
         r.destroy()
         r = None
@@ -608,7 +608,7 @@ async def import_file(req, tmp_dir, qcall, **kwargs):
             )
         x = x.get(PARSED_DATA_ATTR)
         x.models.simulation.simulationId = i
-        x = await simulation_db.save_simulation_json(
+        x = simulation_db.save_simulation_json(
             x, do_validate=True, fixup=True, qcall=qcall
         )
     except Exception:
@@ -707,7 +707,7 @@ async def prepare_for_client(data, qcall, **kwargs):
             "save simulation json with sim_data_template_fixup={}",
             data.get("sim_data_template_fixup", None),
         )
-        await simulation_db.save_simulation_json(data, fixup=True, qcall=qcall)
+        simulation_db.save_simulation_json(data, fixup=True, qcall=qcall)
     return data
 
 

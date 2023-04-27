@@ -354,7 +354,7 @@ def lib_dir_from_sim_dir(sim_dir):
     return _sim_from_path(sim_dir)[1].join(_REL_LIB_DIR)
 
 
-async def migrate_guest_to_persistent_user(guest_uid, to_uid, qcall):
+def migrate_guest_to_persistent_user(guest_uid, to_uid, qcall):
     """Moves all non-example simulations `guest_uid` into `to_uid`.
 
     Only moves non-example simulations. Doesn't delete the guest_uid.
@@ -364,8 +364,8 @@ async def migrate_guest_to_persistent_user(guest_uid, to_uid, qcall):
         to_uid (str): dest user
     """
     g = user_path(uid=guest_uid, qcall=qcall, check=True)
-    async with sirepo.file_lock.FileLock(g):
-        async with sirepo.file_lock.FileLock(
+    with sirepo.file_lock.FileLock(g):
+        with sirepo.file_lock.FileLock(
             user_path(uid=uid, qcall=qcall, check=True),
         ):
             for p in glob.glob(
@@ -496,7 +496,7 @@ def read_json(filename):
     return json_load(json_filename(filename))
 
 
-async def read_simulation_json(sim_type, sid, qcall):
+def read_simulation_json(sim_type, sid, qcall):
     """Calls `open_json_file` and fixes up data, possibly saving
 
     Args:
@@ -525,9 +525,7 @@ async def read_simulation_json(sim_type, sid, qcall):
         raise
     d, c = fixup_old_data(data, path=p, qcall=qcall)
     if c:
-        return await save_simulation_json(
-            d, fixup=False, do_validate=False, qcall=qcall
-        )
+        return save_simulation_json(d, fixup=False, do_validate=False, qcall=qcall)
     return d
 
 
@@ -540,11 +538,11 @@ def save_new_example(data, qcall=None):
     )
 
 
-async def save_new_simulation(data, do_validate=True, qcall=None):
+def save_new_simulation(data, do_validate=True, qcall=None):
     d = simulation_dir(data.simulationType, qcall=qcall)
     sid = _random_id(d, data.simulationType).id
     data.models.simulation.simulationId = sid
-    return await save_simulation_json(
+    return save_simulation_json(
         data,
         do_validate=do_validate,
         qcall=qcall,
@@ -553,9 +551,7 @@ async def save_new_simulation(data, do_validate=True, qcall=None):
     )
 
 
-async def save_simulation_json(
-    data, fixup, do_validate=True, qcall=None, modified=False
-):
+def save_simulation_json(data, fixup, do_validate=True, qcall=None, modified=False):
     """Prepare data and save to json db
 
     Args:

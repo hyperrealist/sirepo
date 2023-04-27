@@ -6,12 +6,11 @@
 """
 from pykern.pkcollections import PKDict
 from pykern.pkdebug import pkdc, pkdlog, pkdp
-import asyncio
 import fcntl
 import os
 import pykern.pkconfig
 import pykern.pkio
-import tornado.gen
+import time
 
 _LOOP_SLEEP = None
 
@@ -27,7 +26,7 @@ class FileLock:
             p += ".lock"
         self._path = str(p)
 
-    async def __aenter__(self):
+    def __aenter__(self):
         for i in range(_LOOP_COUNT):
             try:
                 f = os.open(self._path, os.O_RDWR | os.O_CREAT | os.O_TRUNC)
@@ -44,10 +43,10 @@ class FileLock:
                     os.close(f)
                 except Exception:
                     pass
-            await asyncio.sleep(_LOOP_SLEEP)
+            time.sleep(_LOOP_SLEEP)
         raise RuntimeError(f"fail to flock path={self._path} timeout={_cfg.timeout}")
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    def __aexit__(self, exc_type, exc_val, exc_tb):
         if self._lock:
             os.unlink(self._path)
             os.close(self._lock)

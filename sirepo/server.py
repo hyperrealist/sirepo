@@ -13,6 +13,7 @@ from sirepo import simulation_db
 import re
 import sirepo.const
 import sirepo.feature_config
+import sirepo.file_lock
 import sirepo.flask
 import sirepo.quest
 import sirepo.resource
@@ -70,7 +71,7 @@ class API(sirepo.quest.API):
         data.pkdel("report")
         data.models.simulation.isExample = False
         data.models.simulation.outOfSessionSimulationId = req.id
-        res = self._save_new_and_reply(req, data)
+        res = await self._save_new_and_reply(req, data)
         sirepo.sim_data.get_class(req.type).lib_files_from_other_user(
             data,
             simulation_db.lib_dir_from_sim_dir(src),
@@ -100,7 +101,7 @@ class API(sirepo.quest.API):
             isExample=False,
             outOfSessionSimulationId="",
         )
-        return self._save_new_and_reply(req, d)
+        return await self._save_new_and_reply(req, d)
 
     @sirepo.quest.Spec("require_user", filename="SimFileName", file_type="SimFileType")
     async def api_deleteFile(self):
@@ -299,10 +300,10 @@ class API(sirepo.quest.API):
             req.form_file = f
             req.import_file_arguments = self.sreq.form_get("arguments", "")
 
-            def s(data):
+            async def _save_sim(data):
                 data.models.simulation.folder = req.folder
                 data.models.simulation.isExample = False
-                return self._save_new_and_reply(req, data)
+                return await self._save_new_and_reply(req, data)
 
             if pkio.has_file_extension(req.filename, "json"):
                 data = importer.read_json(req.form_file.as_bytes(), self, req.type)
@@ -323,12 +324,14 @@ class API(sirepo.quest.API):
                     data = await req.template.import_file(
                         req,
                         tmp_dir=d,
-                        reply_op=s,
                         qcall=self,
+                        # SRW needs a simulation created to be able to start
+                        # a background import.
+                        srw_save_sim=_save_sim,
                     )
                 if "error" in data:
                     return self.reply_json(data)
-            return s(data)
+            return await _save_sim(data)
         except sirepo.util.ReplyExc:
             raise
         except Exception as e:
@@ -368,7 +371,7 @@ class API(sirepo.quest.API):
                 res += "-" + sirepo.srschema.parse_name(title)
             return res + ".ipynb"
 
-        def _data(req):
+        async def _data(req):
             f = getattr(req.template, "export_jupyter_notebook", None)
             if not f:
                 raise sirepo.util.NotFound(f"API not supported for tempate={req.type}")
@@ -381,7 +384,7 @@ class API(sirepo.quest.API):
 
         req = self.parse_params(type=simulation_type, id=simulation_id, template=True)
         return self.reply_attachment(
-            _data(req),
+            await _data(req),
             filename=_filename(req),
             content_type="application/json",
         )
@@ -399,7 +402,7 @@ class API(sirepo.quest.API):
                 res += "-" + sirepo.srschema.parse_name(req.title)
             return res + ".ipynb"
 
-        def _data(req):
+        async def _data(req):
             f = getattr(req.template, "export_jupyter_notebook", None)
             if not f:
                 raise sirepo.util.NotFound(f"API not supported for tempate={req.type}")
@@ -418,7 +421,7 @@ class API(sirepo.quest.API):
             title=PKDict(optional=True, name="title"),
         )
         return self.reply_attachment(
-            _data(req),
+            await _data(req),
             filename=_filename(req),
             content_type="application/json",
         )
@@ -436,7 +439,7 @@ class API(sirepo.quest.API):
         )
         if hasattr(req.template, "new_simulation"):
             req.template.new_simulation(d, req.req_data, qcall=self)
-        return self._save_new_and_reply(req, d)
+        return await self._save_new_and_reply(req, d)
 
     @sirepo.quest.Spec("allow_visitor")
     async def api_notFound(self):
@@ -772,7 +775,7 @@ class API(sirepo.quest.API):
         )
         return self.reply_static_jinja(page, "html", values, cache_ok=True)
 
-    def _save_new_and_reply(self, req, data):
+    async def _save_new_and_reply(self, req, data):
         return await self._simulation_data_reply(
             req,
             simulation_db.save_new_simulation(data, qcall=self),
