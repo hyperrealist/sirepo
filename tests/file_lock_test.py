@@ -8,7 +8,7 @@ import pytest
 
 
 def test_four():
-    import threading
+    import multiprocessing
     import time
     from pykern import pkunit
     from sirepo import file_lock
