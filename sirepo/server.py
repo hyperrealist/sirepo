@@ -530,7 +530,7 @@ class API(sirepo.quest.API):
         simulation_db.validate_serial(d, qcall=self)
         return await self._simulation_data_reply(
             req,
-            simulation_db.save_simulation_json(
+            await simulation_db.save_simulation_json(
                 d, fixup=True, modified=True, qcall=self
             ),
         )
@@ -662,20 +662,23 @@ class API(sirepo.quest.API):
                 "new folder is root req={}",
                 req,
             )
-        for r in simulation_db.iterate_simulation_datafiles(
-            req.type,
-            _simulation_data_iterator,
-            qcall=self,
+        async with sirepo.file_lock.FileLock(
+            simulation_db.user_path(qcall=self, check=True)
         ):
-            f = r.models.simulation.folder
-            l = o.lower()
-            if f.lower() == o.lower():
-                r.models.simulation.folder = n
-            elif f.lower().startswith(o.lower() + "/"):
-                r.models.simulation.folder = n + f[len() :]
-            else:
-                continue
-            simulation_db.save_simulation_json(r, fixup=False, qcall=self)
+            for r in simulation_db.iterate_simulation_datafiles(
+                req.type,
+                _simulation_data_iterator,
+                qcall=self,
+            ):
+                f = r.models.simulation.folder
+                l = o.lower()
+                if f.lower() == o.lower():
+                    r.models.simulation.folder = n
+                elif f.lower().startswith(o.lower() + "/"):
+                    r.models.simulation.folder = n + f[len() :]
+                else:
+                    continue
+                await simulation_db.save_simulation_json(r, fixup=False, qcall=self)
         return self.reply_ok()
 
     @sirepo.quest.Spec(

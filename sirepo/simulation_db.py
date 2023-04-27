@@ -363,20 +363,20 @@ async def migrate_guest_to_persistent_user(guest_uid, to_uid, qcall):
         guest_uid (str): source user
         to_uid (str): dest user
     """
-    p = user_path(uid=guest_uid, qcall=qcall, check=True)
-    async with sirepo.file_lock.FileLock(p):
-        for path in glob.glob(
-            str(p.join("*", "*", SIMULATION_DATA_FILE)),
+    g = user_path(uid=guest_uid, qcall=qcall, check=True)
+    async with sirepo.file_lock.FileLock(g):
+        async with sirepo.file_lock.FileLock(
+            user_path(uid=uid, qcall=qcall, check=True),
         ):
-            data = read_json(path)
-            sim = data["models"]["simulation"]
-            if "isExample" in sim and sim["isExample"]:
-                continue
-            dir_path = os.path.dirname(path)
-            new_dir_path = dir_path.replace(guest_uid, to_uid)
-            pkdlog("{} -> {}", dir_path, new_dir_path)
-            pkio.mkdir_parent(new_dir_path)
-            os.rename(dir_path, new_dir_path)
+            for p in glob.glob(
+                str(g.join("*", "*", SIMULATION_DATA_FILE)),
+            ):
+                if read_json(p).models.simulation.get("isExample"):
+                    continue
+                o = os.path.dirname(p)
+                n = o.replace(guest_uid, to_uid)
+                pkio.mkdir_parent(n)
+                os.rename(o, n)
 
 
 def open_json_file(sim_type, path=None, sid=None, fixup=True, qcall=None):
@@ -540,11 +540,11 @@ def save_new_example(data, qcall=None):
     )
 
 
-def save_new_simulation(data, do_validate=True, qcall=None):
+async def save_new_simulation(data, do_validate=True, qcall=None):
     d = simulation_dir(data.simulationType, qcall=qcall)
     sid = _random_id(d, data.simulationType).id
     data.models.simulation.simulationId = sid
-    return save_simulation_json(
+    return await save_simulation_json(
         data,
         do_validate=do_validate,
         qcall=qcall,
